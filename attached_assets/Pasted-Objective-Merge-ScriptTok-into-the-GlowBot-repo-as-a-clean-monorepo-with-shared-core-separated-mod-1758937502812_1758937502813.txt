@@ -1,0 +1,157 @@
+Objective: Merge ScriptTok into the GlowBot repo as a clean monorepo with shared core, separated modules, and zero auth/billing dependencies. Deliver a consistent folder structure, unified env handling, one API surface, and a shared prompt engine. Keep changes confined to a new branch.
+
+Branch + safety
+	1.	Create branch: merge/scriptok-base-setup.
+	2.	Do not touch existing main.
+	3.	All destructive steps must be reversible and gated by commits.
+
+Target folder layout
+
+/apps
+  /glowbot/           # existing app stays here
+  /scriptok/          # move imported ScriptTok UI here (client-side only for now)
+/packages
+  /shared/            # shared types, utils, constants, schema validators
+  /prompt-factory/    # single prompt engine used by both modules
+  /ui/                # shared UI components (buttons, cards, layout)
+/infra
+  docker/             # compose, Dockerfiles if separated later
+
+Move + normalize code
+4) Move ScriptTok source into /apps/scriptok.
+5) Move any duplicated helpers from both apps into /packages/shared (dates, strings, formatting, content schemas, fetch wrappers).
+6) Create `/packages/prompt-factory`:
+   - Use **GlowBot’s current prompt engine as the main implementation**.
+   - Move ScriptTok’s prompt logic/templates into this engine under a `module: "scriptok"` namespace.
+   - Export a single function:
+     generate({ module: "scriptok" | "glowbot", platform, playbook, inputs })
+   - Internally route to the correct module’s playbooks, but share guardrails, output formatting, and schema validation.
+   - Delete ScriptTok’s standalone prompt engine after migration.
+   - Add unit tests to confirm ScriptTok templates still return the same output when called via `module: "scriptok"`.
+
+Single API surface
+7) Expose one server API (keep GlowBot’s server if it exists).
+8) Add a single route: POST /api/generate that calls prompt-factory.generate() with module in the payload.
+9) Add GET /api/health and GET /api/version.
+10) If ScriptTok previously generated client-side, move that call to server via /api/generate.
+
+Unified environment handling
+11) Create one root .env.example with only non-secret placeholders needed for local dev:
+	•	OPENAI_API_KEY, DATABASE_URL, REDIS_URL (optional for later), LOG_LEVEL.
+
+	12.	Implement a single typed env loader (zod + envalid) in /packages/shared/env.ts.
+	13.	Refactor both apps and the server to import from this shared env loader.
+	14.	Delete per-app env loaders and outdated .env examples; keep only the root .env.example.
+
+Content model stub (no auth)
+15) In shared types, add a light content model with a module flag:
+
+export type ModuleKey = "scriptok" | "glowbot";
+export interface ContentItem {
+  id: string;              // uuid
+  module: ModuleKey;       // origin module
+  platform: "tiktok" | "shorts" | "reels" | "blog" | "youtube" | "email";
+  playbook: string;        // template key
+  text: string;            // generated output
+  meta?: Record<string, unknown>;
+  createdAt: string;       // ISO
+}
+
+	16.	Implement an in-memory repository for now (/packages/shared/contentRepo.memory.ts) with CRUD and persistence to local JSON file in /tmp/ for dev only. Replace later with DB.
+	17.	Wire ScriptTok UI to read/write via a small client SDK: /packages/shared/client.ts hitting /api/*.
+
+Routing + navigation separation
+18) In GlowBot UI, add a “Modules” section in the sidebar with two entries: ScriptTok, GlowBot.
+19) Route ScriptTok pages under /scriptok/*; GlowBot pages under /glowbot/*.
+20) If a module’s routes are not available, show a placeholder page with a brief description and a disabled CTA (no billing yet).
+
+Shared UI
+21) Extract duplicate UI primitives (Button, Card, Section, EmptyState) to /packages/ui.
+22) Replace module-local copies with imports from /packages/ui.
+
+Build system + workspaces
+23) Convert repo to workspaces (pnpm or npm). Root package.json:
+
+{
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"]
+}
+
+	24.	Ensure each app/package has clean build, dev, test scripts; root has:
+
+{
+  "scripts": {
+    "dev": "concurrently -n SERVER,STOK,GLOW \"npm:dev:server\" \"npm:dev:scriptok\" \"npm:dev:glowbot\"",
+    "dev:server": "ts-node ./server/index.ts",
+    "dev:scriptok": "vite --config apps/scriptok/vite.config.ts",
+    "dev:glowbot": "vite --config apps/glowbot/vite.config.ts",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck"
+  }
+}
+
+(If Turbo not present, use plain npm -w commands. Keep it simple but consistent.)
+
+TypeScript config
+25) Root tsconfig.json with path aliases:
+
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["packages/shared/src/*"],
+      "@prompt/*": ["packages/prompt-factory/src/*"],
+      "@ui/*": ["packages/ui/src/*"]
+    }
+  }
+}
+
+	26.	Update imports across apps and server to use these aliases.
+
+Testing
+27) Unify Vitest config at root; each package/app can extend it.
+28) Add tests:
+	•	Prompt factory: verifies module routing and schema.
+	•	API /api/generate: returns 400 on bad inputs; returns valid ContentItem on success.
+	•	Minimal Playwright e2e: load ScriptTok, generate, see output; load GlowBot, generate, see output.
+
+Linting + formatting
+29) Single ESLint + Prettier at root; remove app-specific variants.
+30) Add CI-friendly scripts: lint, typecheck, test.
+
+Docker/dev
+31) Keep dev simple: optional docker-compose.yml that runs one server container and a static file server for apps, or skip Docker entirely for now.
+32) Ensure npm run dev starts server + both UIs concurrently without extra setup.
+
+Dead code and stubs
+33) Identify and remove duplicate prompts/templates left in both modules; consolidate into /packages/prompt-factory.
+34) Any pages that referenced old per-app APIs should be refactored to the single /api/generate.
+35) Leave // TODO(auth) markers where auth/tenancy will later plug in (no mocks).
+
+Documentation
+36) Overwrite root README.md with:
+	•	Quick start (install, env, run dev, build, test)
+	•	Folder map (apps, packages, infra)
+	•	API contract for /api/generate (request/response JSON)
+	•	How to add a new playbook or platform to prompt-factory
+	•	How to add a new module (pattern to follow)
+
+	37.	Add CONTRIBUTING.md with branching, commit, and test rules.
+	38.	Add DECISIONS.md that states “single API, single prompt engine, modules via module param”.
+
+Acceptance criteria (must pass before PR)
+	•	npm i at root installs everything.
+	•	npm run dev boots server and both apps; ScriptTok lives under /scriptok, GlowBot under /glowbot.
+	•	Calling POST /api/generate with {"module":"scriptok", ...} returns a valid ContentItem. Same for glowbot.
+	•	ScriptTok UI can generate and save to the shared content store; GlowBot UI can do the same.
+	•	No residual per-app env loaders; only /packages/shared/env.ts.
+	•	No duplicate button/card primitives in apps; all from /packages/ui.
+	•	Tests: unit and one e2e pass locally.
+
+Deliverables
+	•	Branch: merge/scriptok-base-setup pushed.
+	•	Updated README.md, CONTRIBUTING.md, DECISIONS.md.
+	•	A short “CHANGELOG: merge base” entry with what moved where.
+
