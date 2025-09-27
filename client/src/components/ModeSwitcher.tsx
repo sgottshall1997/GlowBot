@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ChevronDown, Home, ChefHat } from 'lucide-react';
+import { ChevronDown, Home, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Mode {
@@ -27,11 +27,11 @@ const modes: Mode[] = [
     description: 'Content generation and core features'
   },
   {
-    name: 'CookAIng',
-    value: 'cookaing',
-    href: '/cookaing-marketing',
-    icon: ChefHat,
-    description: 'Marketing automation and analytics'
+    name: 'GlowBot',
+    value: 'glowbot',
+    href: '/glowbot',
+    icon: Sparkles,
+    description: 'AI-powered viral content generation'
   }
 ];
 
@@ -40,8 +40,8 @@ const ModeSwitcher: React.FC = () => {
   
   // Determine current mode based on location
   const getCurrentMode = () => {
-    if (location.startsWith('/cookaing-marketing')) {
-      return modes.find(m => m.value === 'cookaing') || modes[0];
+    if (location.startsWith('/glowbot')) {
+      return modes.find(m => m.value === 'glowbot') || modes[0];
     }
     return modes[0]; // Default to main app
   };
@@ -59,7 +59,7 @@ const ModeSwitcher: React.FC = () => {
           variant="outline"
           className={cn(
             "flex items-center space-x-2 min-w-[140px] justify-between",
-            currentMode.value === 'cookaing' && "border-blue-500 bg-blue-50 dark:bg-blue-950"
+            currentMode.value === 'glowbot' && "border-purple-500 bg-purple-50 dark:bg-purple-950"
           )}
         >
           <div className="flex items-center space-x-2">
@@ -81,14 +81,18 @@ const ModeSwitcher: React.FC = () => {
               onClick={() => handleModeChange(mode)}
               className={cn(
                 "flex flex-col items-start space-y-1 p-3 cursor-pointer",
-                isActive && "bg-blue-50 dark:bg-blue-950"
+                isActive && mode.value === 'glowbot' && "bg-purple-50 dark:bg-purple-950",
+                isActive && mode.value === 'main' && "bg-blue-50 dark:bg-blue-950"
               )}
             >
               <div className="flex items-center space-x-2 w-full">
                 <Icon className="h-4 w-4" />
                 <span className="font-medium">{mode.name}</span>
                 {isActive && (
-                  <div className="ml-auto w-2 h-2 bg-blue-500 rounded-full" />
+                  <div className={cn(
+                    "ml-auto w-2 h-2 rounded-full",
+                    mode.value === 'glowbot' ? "bg-purple-500" : "bg-blue-500"
+                  )} />
                 )}
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400">
