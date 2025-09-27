@@ -1,5 +1,7 @@
 import React from 'react';
+import { useLocation } from 'wouter';
 import Sidebar from './Sidebar';
+import ScriptTokSidebar from './ScriptTokSidebar';
 import Footer from './Footer';
 import ModeSwitcher from './ModeSwitcher';
 
@@ -8,10 +10,13 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
+  const [location] = useLocation();
+  const isScriptTokRoute = location.startsWith('/scriptok');
+
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       {/* Sidebar - Desktop: w-64, Mobile: overlay */}
-      <Sidebar />
+      {isScriptTokRoute ? <ScriptTokSidebar /> : <Sidebar />}
       
       {/* Main content area with header */}
       <div className="flex-1 flex flex-col overflow-hidden">
