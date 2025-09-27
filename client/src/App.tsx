@@ -47,32 +47,12 @@ import ScheduleManager from "@/pages/schedule-manager";
 import SupportPage from "@/pages/SupportPage";
 import ProductResearch from "@/pages/ProductResearch";
 
-// CookAIng Marketing Engine pages
-import CookAIngMarketingDashboard from "@/pages/cookaing-marketing/index";
-import CookAIngOrganizations from "@/pages/cookaing-marketing/organizations";
-import CookAIngContacts from "@/pages/cookaing-marketing/contacts";
-import CookAIngCampaigns from "@/pages/cookaing-marketing/campaigns";
-import CookAIngWorkflows from "@/pages/cookaing-marketing/workflows";
-import CookAIngForms from "@/pages/cookaing-marketing/forms";
-import CookAIngAffiliateProducts from "@/pages/cookaing-marketing/affiliate-products";
-import CookAIngMarketingDocs from "@/pages/cookaing-marketing/docs";
-import CookAIngIntegrationsHealth from "@/pages/cookaing-marketing/integrations-health";
-import CookAIngSegments from "@/pages/cookaing-marketing/segments";
-import CookAIngExperiments from "@/pages/cookaing-marketing/experiments";
-import CookAIngPersonalization from "@/pages/cookaing-marketing/personalization";
-import CookAIngSubmissions from "@/pages/cookaing-marketing/submissions";
-import CookAIngTrends from "@/pages/cookaing-marketing/trends";
-import CookAIngReports from "@/pages/cookaing-marketing/reports";
-import CookAIngCosts from "@/pages/cookaing-marketing/costs";
-import CookAIngAttribution from "@/pages/cookaing-marketing/attribution";
-import CookAIngWebhooks from "@/pages/cookaing-marketing/webhooks";
-import CookAIngEmailTest from "@/pages/cookaing-marketing/email-test";
-import CookAIngDevTools from "@/pages/cookaing-marketing/devtools";
-import CookAIngIntelligence from "@/pages/cookaing-marketing/intelligence";
+// CookAIng Marketing Engine pages - Note: These pages are referenced in redirects below but not implemented yet
 import PublicForm from "@/pages/public-form";
 
 import Layout from "@/components/Layout";
 import Footer from "@/components/Footer";
+import CookAIngRouter from "@/components/CookAIngRouter";
 import { initScraperConsole } from "./lib/scraperConsole";
 
 function Router() {
