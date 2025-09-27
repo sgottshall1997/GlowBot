@@ -13,6 +13,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [location] = useLocation();
   const isScriptTokRoute = location.startsWith('/scriptok');
 
+  // Debug logging
+  console.log('🔍 Layout Debug:', {
+    location,
+    isScriptTokRoute,
+    sidebarToShow: isScriptTokRoute ? 'ScriptTokSidebar' : 'Sidebar'
+  });
+
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       {/* Sidebar - Desktop: w-64, Mobile: overlay */}
@@ -27,6 +34,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
                 Content Generation Platform
               </h1>
+              <div className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
+                DEBUG: {location} | {isScriptTokRoute ? 'ScriptTokSidebar' : 'Sidebar'}
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <ModeSwitcher />
