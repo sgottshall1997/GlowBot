@@ -28,7 +28,6 @@ import { generateDailyBatch } from "./api/daily-batch";
 import { amazonLinksRouter } from "./api/amazonLinks";
 import affiliateRouter from "./api/affiliate";
 
-import { cookingPipeline } from "./services/cookingContentPipeline";
 import redirectRouter from "./api/redirect";
 import platformContentRouter from "./api/platform-content";
 import hooksRouter from "./api/hooks";
@@ -44,10 +43,6 @@ import { scheduleContent, getScheduledPosts, processScheduledPosts } from "./api
 import { startBulkGeneration, getBulkJobStatus, getBulkJobs } from "./api/bulk-content-generation";
 import { startAutomatedBulkGeneration, getBulkJobDetails, getBulkContentByJobId } from "./api/automated-bulk-generation";
 import { createScheduledBulkJob, getScheduledBulkJobs, deleteScheduledBulkJob, initializeScheduledJobs } from "./api/simple-scheduler";
-import trendsRouter from "./api/cookaing-marketing/trends";
-import affiliateAutoInsertRouter from "./api/cookaing-marketing/affiliate-auto-insert";
-import cookAIngPromoRouter from "./routes/cookaing-promo";
-// Old scheduled-bulk-generation system removed - using simplified automated-bulk scheduling
 
 import { cronStatusRouter } from "./api/cron-status";
 import perplexityStatusRouter from "./api/perplexity-status";
@@ -80,89 +75,7 @@ import amazonRouter from "./api/amazon";
 import amazonTrendsRouter from "./api/amazon-trends";
 import hybridTrendsRouter from "./api/hybridTrends";
 
-// CookAIng Marketing Engine routers
-import organizationsRouter from "./api/organizations";
-import contactsRouter from "./api/contacts";
-import campaignsRouter from "./api/campaigns";
-import workflowsRouter from "./api/workflows";
-import formsRouter from "./api/forms";
-import publicFormsRouter from "./api/public-forms";
-import affiliateProductsRouter from "./api/affiliate-products";
-import emailRouter from "./api/cookaing-marketing/email";
-import socialRouter from "./api/cookaing-marketing/social";
-import blogRouter from "./api/cookaing-marketing/blog";
-import pushRouter from "./api/cookaing-marketing/push";
-import abRouter from "./api/cookaing-marketing/ab";
-import conversionsRouter from "./api/cookaing-marketing/conversions";
-import reportsRouter from "./api/cookaing-marketing/reports";
-import integrationsHealthRouter from "./api/cookaing-marketing/integrations/health";
-import observabilityRouter from "./api/cookaing-marketing/observability";
-import contentRouter from "./api/cookaing-marketing/content";
-import contentEnhancementRouter from "./api/cookaing-marketing/content-enhancement";
-import unifiedContentRouter from "./api/cookaing-marketing/unified-content";
-import intelligenceRouter from "./api/cookaing-marketing/intelligence";
-import socialAutomationRouter from "./api/cookaing-marketing/social-automation";
-import complianceRouter from "./api/cookaing-marketing/compliance";
-import enhanceRouter from "./api/cookaing-marketing/enhance";
-import supportRouter from "./api/cookaing-marketing/support";
-import { seedDataRouter } from "./api/seed-data";
-import phase5Router from "./api/cookaing-marketing";
-import glowbotAdminRouter from "./api/admin";
-
 export async function registerRoutes(app: Express): Promise<Server> {
-  // GlowBot Admin routes (for comprehensive testing)
-  app.use('/api/glowbot/admin', glowbotAdminRouter);
-
-  // CookAIng Marketing Engine routes
-  app.use('/api/cookaing-marketing/organizations', organizationsRouter);
-  app.use('/api/cookaing-marketing/contacts', contactsRouter);
-  app.use('/api/cookaing-marketing/campaigns', campaignsRouter);
-  app.use('/api/cookaing-marketing/workflows', workflowsRouter);
-  app.use('/api/cookaing-marketing/forms', formsRouter);
-  app.use('/api/cookaing-marketing/affiliate-products', affiliateProductsRouter);
-
-  // Public forms access (limited to public endpoints only)
-  app.use('/api/forms', publicFormsRouter);
-  app.use('/api/cookaing-marketing/email', emailRouter);
-  app.use('/api/cookaing-marketing/social', socialRouter);
-  app.use('/api/cookaing-marketing/blog', blogRouter);
-  app.use('/api/cookaing-marketing/push', pushRouter);
-  app.use('/api/cookaing-marketing/ab', abRouter);
-  app.use('/api/cookaing-marketing/conversions', conversionsRouter);
-  app.use('/api/cookaing-marketing/reports', reportsRouter);
-  app.use('/api/cookaing-marketing/integrations/health', integrationsHealthRouter);
-  app.use('/api/cookaing-marketing/observability', observabilityRouter);
-  app.use('/api/cookaing-marketing/content', contentRouter);
-  app.use('/api/cookaing-marketing/content-enhancement', contentEnhancementRouter);
-  app.use('/api/cookaing-marketing/unified-content', unifiedContentRouter);
-  app.use('/api/cookaing-marketing/intel', intelligenceRouter);
-  app.use('/api/cookaing-marketing/social-automation', socialAutomationRouter);
-  app.use('/api/cookaing-marketing/compliance', complianceRouter);
-  app.use('/api/cookaing-marketing/enhance', enhanceRouter);
-  app.use('/api/cookaing-marketing/support', supportRouter);
-
-  // Phase 5: Advanced Personalization and Collaboration
-  app.use('/api/cookaing-marketing', phase5Router);
-  app.use('/api/cookaing-marketing/trends', trendsRouter);
-  app.use('/api/cookaing-marketing/affiliate-auto-insert', affiliateAutoInsertRouter);
-  app.use('/api/cookaing-promo', cookAIngPromoRouter);
-  app.use('/api/cookaing-marketing/seed-data', seedDataRouter);
-
-  // CookAIng Marketing Engine authentication
-  app.post('/api/cookaing-marketing/auth/login', (req, res) => {
-    const { password } = req.body;
-    const expectedPassword = process.env.COOKAING_SECTION_PASSWORD;
-
-    if (!expectedPassword) {
-      return res.json({ success: true }); // No password protection configured
-    }
-
-    if (password === expectedPassword) {
-      return res.json({ success: true });
-    }
-
-    return res.status(401).json({ success: false, error: 'Invalid password' });
-  });
 
   // Redirect system for affiliate tracking
   app.use('/api/redirect', redirectRouter);

@@ -171,7 +171,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
           onClick={() => setIsCollapsed(true)}
         />
       )}
-      
+
       {/* Sidebar */}
       <aside className={cn(
         "fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out flex flex-col",
@@ -206,7 +206,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                 {category.items.map((item) => {
                   const Icon = item.icon;
                   const active = isActive(item.href);
-                  
+
                   return (
                     <Link
                       key={item.href}
