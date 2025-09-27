@@ -118,6 +118,75 @@ router.get('/content', async (req, res) => {
   }
 });
 
+// PATCH /api/content/:id - Update existing content
+router.patch('/content/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Validate update payload
+    const UpdateContentSchema = z.object({
+      module: z.enum(['scriptok', 'glowbot']).optional(),
+      platform: z.enum(['tiktok', 'shorts', 'reels', 'blog', 'youtube', 'email']).optional(),
+      playbook: z.string().min(1).optional(),
+      text: z.string().min(1).optional(),
+      meta: z.record(z.any()).optional(),
+    });
+
+    const validation = UpdateContentSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid update data',
+        details: validation.error.errors,
+      });
+    }
+
+    const updates = validation.data;
+    const updatedItem = await contentRepo.update(id, updates);
+    if (!updatedItem) {
+      return res.status(404).json({
+        success: false,
+        error: 'Content not found',
+      });
+    }
+
+    res.json({
+      success: true,
+      data: updatedItem,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+    });
+  }
+});
+
+// DELETE /api/content/:id - Delete content item
+router.delete('/content/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await contentRepo.delete(id);
+    
+    if (!deleted) {
+      return res.status(404).json({
+        success: false,
+        error: 'Content not found',
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Content deleted successfully',
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+    });
+  }
+});
+
 // GET /api/version - Current version info  
 router.get('/version', async (req, res) => {
   res.json({

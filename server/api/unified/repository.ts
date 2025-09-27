@@ -51,6 +51,19 @@ class ContentRepository {
     return this.items.find(item => item.id === id) || null;
   }
 
+  async update(id: string, updates: Partial<CreateContentRequest>): Promise<ContentItem | null> {
+    const item = this.items.find(item => item.id === id);
+    if (!item) return null;
+
+    // Update allowed fields
+    if (updates.text !== undefined) item.text = updates.text;
+    if (updates.meta !== undefined) item.meta = updates.meta;
+    if (updates.platform !== undefined) item.platform = updates.platform;
+    if (updates.playbook !== undefined) item.playbook = updates.playbook;
+
+    return item;
+  }
+
   async delete(id: string): Promise<boolean> {
     const index = this.items.findIndex(item => item.id === id);
     if (index === -1) return false;
