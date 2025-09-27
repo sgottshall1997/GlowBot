@@ -6,7 +6,18 @@
 import { generateWithClaude as claudeGenerate } from './claude';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// Lazy initialization of OpenAI client to avoid requiring API key at startup
+let openai: OpenAI | null = null;
+
+function getOpenAIClient(): OpenAI {
+  if (!openai) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY environment variable is required for OpenAI functionality');
+    }
+    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return openai;
+}
 
 export interface AIGenerationRequest {
   model?: 'claude' | 'chatgpt';
@@ -63,7 +74,7 @@ export async function generateWithAI(prompt: string, config: AIGenerationRequest
     
     return {
       success: false,
-      error: error.message,
+      error: error instanceof Error ? error.message : String(error),
       model: selectedModel,
       processingTime: Date.now() - startTime
     };
@@ -91,10 +102,10 @@ async function generateWithClaudeRouter(prompt: string, config: AIGenerationRequ
         success: true,
         content: claudeResponse.content,
         model: 'claude',
-        tokensUsed: claudeResponse.metadata?.usage?.input_tokens + claudeResponse.metadata?.usage?.output_tokens || 0
+        tokensUsed: 0 // Token usage tracking would need to be implemented in Claude service
       };
     } else {
-      throw new Error(claudeResponse.error || 'Claude generation failed');
+      throw new Error('Claude generation failed');
     }
   } catch (error) {
     console.error('❌ Claude generation error:', error);
@@ -114,7 +125,7 @@ async function generateWithOpenAI(prompt: string, config: AIGenerationRequest): 
     const maxTokens = config.maxTokens || 1500;
     
     // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAIClient().chat.completions.create({
       model: 'gpt-4o',
       messages: [
         { role: 'system', content: systemPrompt },
@@ -167,7 +178,7 @@ export async function checkModelAvailability(): Promise<{
     });
     results.claude = claudeTest.success;
   } catch (error) {
-    console.log('Claude availability test failed:', error.message);
+    console.log('Claude availability test failed:', error instanceof Error ? error.message : String(error));
   }
   
   // Test ChatGPT availability
@@ -179,7 +190,7 @@ export async function checkModelAvailability(): Promise<{
     });
     results.chatgpt = chatgptTest.success;
   } catch (error) {
-    console.log('ChatGPT availability test failed:', error.message);
+    console.log('ChatGPT availability test failed:', error instanceof Error ? error.message : String(error));
   }
   
   console.log(`🔍 AI Model Availability: Claude: ${results.claude}, ChatGPT: ${results.chatgpt}, Preferred: Claude`);
