@@ -73,6 +73,7 @@ import { perplexityAutomationRouter } from "./api/perplexity-automation";
 import safeguardMonitorRouter from "./api/safeguard-monitor";
 import amazonRouter from "./api/amazon";
 import amazonTrendsRouter from "./api/amazon-trends";
+import generateRouter from "./api/generate";
 import { unifiedGenerateRouter } from "./api/unified-generate";
 import hybridTrendsRouter from "./api/hybridTrends";
 
