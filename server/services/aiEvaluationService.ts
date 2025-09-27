@@ -2,29 +2,8 @@ import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import { InsertContentEvaluation } from '@shared/schema';
 
-// Lazy initialization of AI clients to avoid requiring API keys at startup
-let openai: OpenAI | null = null;
-let anthropic: Anthropic | null = null;
-
-function getOpenAIClient(): OpenAI {
-  if (!openai) {
-    if (!process.env.OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY environment variable is required for AI evaluation');
-    }
-    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  }
-  return openai;
-}
-
-function getAnthropicClient(): Anthropic {
-  if (!anthropic) {
-    if (!process.env.ANTHROPIC_API_KEY) {
-      throw new Error('ANTHROPIC_API_KEY environment variable is required for AI evaluation');
-    }
-    anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  }
-  return anthropic;
-}
+// Use centralized AI client manager with graceful degradation
+import { getOpenAIClient, getAnthropicClient } from './aiModelClient';
 
 interface EvaluationResult {
   viralityScore: number;
@@ -80,7 +59,25 @@ Provide your evaluation in the following JSON format:
 
 export async function evaluateContentWithChatGPT(content: string): Promise<EvaluationResult> {
   try {
-    const response = await getOpenAIClient().chat.completions.create({
+    const openaiClient = getOpenAIClient();
+    if (!openaiClient) {
+      // Return default evaluation when OpenAI is not available
+      return {
+        viralityScore: 5,
+        clarityScore: 5,
+        persuasivenessScore: 5,
+        creativityScore: 5,
+        viralityJustification: 'AI evaluation unavailable',
+        clarityJustification: 'AI evaluation unavailable',
+        persuasivenessJustification: 'AI evaluation unavailable',
+        creativityJustification: 'AI evaluation unavailable',
+        needsRevision: false,
+        improvementSuggestions: 'OpenAI API key required for detailed evaluation',
+        overallScore: 5
+      };
+    }
+
+    const response = await openaiClient.chat.completions.create({
       model: "gpt-4o", // Latest OpenAI model
       messages: [
         {
@@ -118,7 +115,25 @@ export async function evaluateContentWithChatGPT(content: string): Promise<Evalu
 
 export async function evaluateContentWithClaude(content: string): Promise<EvaluationResult> {
   try {
-    const response = await getAnthropicClient().messages.create({
+    const anthropicClient = getAnthropicClient();
+    if (!anthropicClient) {
+      // Return default evaluation when Claude is not available
+      return {
+        viralityScore: 5,
+        clarityScore: 5,
+        persuasivenessScore: 5,
+        creativityScore: 5,
+        viralityJustification: 'AI evaluation unavailable',
+        clarityJustification: 'AI evaluation unavailable',
+        persuasivenessJustification: 'AI evaluation unavailable',
+        creativityJustification: 'AI evaluation unavailable',
+        needsRevision: false,
+        improvementSuggestions: 'Anthropic API key required for detailed evaluation',
+        overallScore: 5
+      };
+    }
+
+    const response = await anthropicClient.messages.create({
       model: "claude-sonnet-4-20250514", // Latest Claude model
       max_tokens: 1000,
       temperature: 0.3,

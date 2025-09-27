@@ -6,18 +6,8 @@
 import { generateWithClaude as claudeGenerate } from './claude';
 import OpenAI from 'openai';
 
-// Lazy initialization of OpenAI client to avoid requiring API key at startup
-let openai: OpenAI | null = null;
-
-function getOpenAIClient(): OpenAI {
-  if (!openai) {
-    if (!process.env.OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY environment variable is required for OpenAI functionality');
-    }
-    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  }
-  return openai;
-}
+// Use centralized AI client manager with graceful degradation
+import { getOpenAIClient } from './aiModelClient';
 
 export interface AIGenerationRequest {
   model?: 'claude' | 'chatgpt';
@@ -124,8 +114,18 @@ async function generateWithOpenAI(prompt: string, config: AIGenerationRequest): 
     const temperature = config.temperature || 0.7;
     const maxTokens = config.maxTokens || 1500;
     
+    const openaiClient = getOpenAIClient();
+    if (!openaiClient) {
+      return {
+        success: false,
+        error: 'OpenAI service is not available. Please configure your OPENAI_API_KEY.',
+        model: 'chatgpt',
+        tokensUsed: 0
+      };
+    }
+    
     // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-    const response = await getOpenAIClient().chat.completions.create({
+    const response = await openaiClient.chat.completions.create({
       model: 'gpt-4o',
       messages: [
         { role: 'system', content: systemPrompt },

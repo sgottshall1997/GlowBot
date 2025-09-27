@@ -6,28 +6,44 @@
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 
-// Lazy initialization of AI clients to avoid requiring API keys at startup
+// Lazy initialization of AI clients with graceful degradation when API keys are missing
 let openai: OpenAI | null = null;
 let anthropic: Anthropic | null = null;
+let openaiInitialized = false;
+let anthropicInitialized = false;
 
-function getOpenAIClient(): OpenAI {
-  if (!openai) {
-    if (!process.env.OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY environment variable is required for OpenAI functionality');
+export function getOpenAIClient(): OpenAI | null {
+  if (!openaiInitialized) {
+    if (process.env.OPENAI_API_KEY) {
+      openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    } else {
+      openai = null;
+      console.warn('⚠️ OpenAI API key not found. OpenAI features will be disabled.');
     }
-    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    openaiInitialized = true;
   }
   return openai;
 }
 
-function getAnthropicClient(): Anthropic {
-  if (!anthropic) {
-    if (!process.env.ANTHROPIC_API_KEY) {
-      throw new Error('ANTHROPIC_API_KEY environment variable is required for Anthropic functionality');
+export function getAnthropicClient(): Anthropic | null {
+  if (!anthropicInitialized) {
+    if (process.env.ANTHROPIC_API_KEY) {
+      anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    } else {
+      anthropic = null;
+      console.warn('⚠️ Anthropic API key not found. Claude features will be disabled.');
     }
-    anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    anthropicInitialized = true;
   }
   return anthropic;
+}
+
+export function isOpenAIAvailable(): boolean {
+  return getOpenAIClient() !== null;
+}
+
+export function isAnthropicAvailable(): boolean {
+  return getAnthropicClient() !== null;
 }
 
 interface ContentGenerationParams {
@@ -74,6 +90,11 @@ export const aiModelClient = {
    */
   async generateWithOpenAI(params: ContentGenerationParams): Promise<string> {
     try {
+      const openaiClient = getOpenAIClient();
+      if (!openaiClient) {
+        return 'OpenAI service is not available. Please configure your OPENAI_API_KEY to use AI content generation.';
+      }
+
       const {
         systemPrompt,
         userPrompt,
@@ -87,7 +108,7 @@ export const aiModelClient = {
       // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
       const actualModel = model === 'gpt-4' ? 'gpt-4o' : model;
 
-      const response = await getOpenAIClient().chat.completions.create({
+      const response = await openaiClient.chat.completions.create({
         model: actualModel,
         messages: [
           {
@@ -117,6 +138,11 @@ export const aiModelClient = {
    */
   async generateWithClaude(params: ContentGenerationParams): Promise<string> {
     try {
+      const anthropicClient = getAnthropicClient();
+      if (!anthropicClient) {
+        return 'Claude service is not available. Please configure your ANTHROPIC_API_KEY to use Claude content generation.';
+      }
+
       const {
         systemPrompt,
         userPrompt,
@@ -126,7 +152,7 @@ export const aiModelClient = {
       } = params;
 
       // the newest Anthropic model is "claude-3-7-sonnet-20250219" which was released February 24, 2025
-      const response = await getAnthropicClient().messages.create({
+      const response = await anthropicClient.messages.create({
         model: model,
         max_tokens: maxTokens,
         temperature: temperature,
@@ -158,6 +184,20 @@ export const aiModelClient = {
    */
   async analyzeContent(content: string, niche: string): Promise<any> {
     try {
+      const openaiClient = getOpenAIClient();
+      if (!openaiClient) {
+        // Return default analysis when OpenAI is not available
+        return {
+          keywords: ['content', 'analysis', 'unavailable'],
+          entities: [],
+          sentiment: 'neutral',
+          engagementScore: 5,
+          themes: ['Content analysis unavailable'],
+          targetAudience: 'Unknown (OpenAI API key required for detailed analysis)',
+          error: 'OpenAI service is not available. Please configure your OPENAI_API_KEY for content analysis.'
+        };
+      }
+
       const systemPrompt = `You are a content analysis expert specializing in the ${niche} niche.
       Analyze the provided content for key themes, entities, sentiment, and engagement potential.`;
 
@@ -174,7 +214,7 @@ export const aiModelClient = {
       - targetAudience: Who this content is most likely targeted towards`;
 
       // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
-      const response = await getOpenAIClient().chat.completions.create({
+      const response = await openaiClient.chat.completions.create({
         model: 'gpt-4o',
         messages: [
           {

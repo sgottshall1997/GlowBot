@@ -4,29 +4,8 @@ import Anthropic from '@anthropic-ai/sdk';
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 // the newest Anthropic model is "claude-3-7-sonnet-20250219" which was released February 24, 2025
 
-// Lazy initialization of AI clients to avoid requiring API keys at startup
-let openai: OpenAI | null = null;
-let anthropic: Anthropic | null = null;
-
-function getOpenAIClient(): OpenAI {
-  if (!openai) {
-    if (!process.env.OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY environment variable is required for multi-platform content generation');
-    }
-    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  }
-  return openai;
-}
-
-function getAnthropicClient(): Anthropic {
-  if (!anthropic) {
-    if (!process.env.ANTHROPIC_API_KEY) {
-      throw new Error('ANTHROPIC_API_KEY environment variable is required for multi-platform content generation');
-    }
-    anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  }
-  return anthropic;
-}
+// Use centralized AI client manager with graceful degradation
+import { getOpenAIClient, getAnthropicClient } from './aiModelClient';
 
 interface PlatformContentRequest {
   platform: string;
@@ -251,24 +230,43 @@ export class MultiPlatformContentGenerator {
   async generatePlatformContent(request: PlatformContentRequest): Promise<PlatformContentResponse> {
     const prompt = this.getPromptForPlatform(request);
     
-    try {
-      // Try OpenAI first
-      const response = await getOpenAIClient().chat.completions.create({
-        model: "gpt-4o",
-        messages: [{ role: "user", content: prompt }],
-        max_tokens: 1000,
-        temperature: 0.7,
-      });
-      
-      const aiResponse = response.choices[0].message.content || '';
-      return this.formatResponse(request.platform, request.contentType, aiResponse);
-      
-    } catch (openaiError: any) {
-      console.log('OpenAI failed, trying Anthropic:', openaiError.message);
-      
+    const openaiClient = getOpenAIClient();
+    const anthropicClient = getAnthropicClient();
+    
+    // Check if any AI service is available
+    if (!openaiClient && !anthropicClient) {
+      return {
+        platform: request.platform,
+        type: request.contentType,
+        label: `${request.platform} content`,
+        content: 'AI content generation is not available. Please configure your OPENAI_API_KEY or ANTHROPIC_API_KEY to use this feature.',
+        hashtags: ['#unavailable'],
+        postInstructions: 'Configure AI API keys to enable content generation'
+      };
+    }
+    
+    // Try OpenAI first if available
+    if (openaiClient) {
       try {
-        // Fallback to Anthropic
-        const response = await getAnthropicClient().messages.create({
+        const response = await openaiClient.chat.completions.create({
+          model: "gpt-4o",
+          messages: [{ role: "user", content: prompt }],
+          max_tokens: 1000,
+          temperature: 0.7,
+        });
+        
+        const aiResponse = response.choices[0].message.content || '';
+        return this.formatResponse(request.platform, request.contentType, aiResponse);
+        
+      } catch (openaiError: any) {
+        console.log('OpenAI failed, trying Anthropic:', openaiError.message);
+      }
+    }
+    
+    // Try Anthropic if OpenAI failed or is unavailable
+    if (anthropicClient) {
+      try {
+        const response = await anthropicClient.messages.create({
           model: "claude-3-7-sonnet-20250219",
           max_tokens: 1000,
           messages: [{ role: "user", content: prompt }],
@@ -278,10 +276,19 @@ export class MultiPlatformContentGenerator {
         return this.formatResponse(request.platform, request.contentType, aiResponse);
         
       } catch (anthropicError: any) {
-        console.error('Both AI services failed:', { openaiError: openaiError.message, anthropicError: anthropicError.message });
-        throw new Error('AI content generation temporarily unavailable');
+        console.error('Anthropic failed:', anthropicError.message);
       }
     }
+    
+    // If both services failed or are unavailable, return the fallback content that was set earlier
+    return {
+      platform: request.platform,
+      type: request.contentType,
+      label: `${request.platform} content`,
+      content: 'AI content generation is not available. Please configure your OPENAI_API_KEY or ANTHROPIC_API_KEY to use this feature.',
+      hashtags: ['#unavailable'],
+      postInstructions: 'Configure AI API keys to enable content generation'
+    };
   }
   
   async generateMultiPlatformContent(

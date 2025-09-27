@@ -1,17 +1,6 @@
 import { OpenAI } from 'openai';
-
-// Lazy initialization of OpenAI client to avoid requiring API key at startup
-let openai: OpenAI | null = null;
-
-function getOpenAIClient(): OpenAI {
-  if (!openai) {
-    if (!process.env.OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY environment variable is required for Spartan content generation');
-    }
-    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  }
-  return openai;
-}
+// Use centralized AI client manager with graceful degradation
+import { getOpenAIClient } from './aiModelClient';
 
 // Spartan format configuration
 const SPARTAN_SYSTEM_PROMPT = `
@@ -138,7 +127,15 @@ Context: ${additionalContext}
       );
       
       // Process Claude response into Spartan format
-      const spartanProcessed = await getOpenAIClient().chat.completions.create({
+      const openaiClient = getOpenAIClient();
+      if (!openaiClient) {
+        return {
+          success: false,
+          error: 'Spartan content generation is not available. Please configure your OPENAI_API_KEY to use this feature.'
+        };
+      }
+      
+      const spartanProcessed = await openaiClient.chat.completions.create({
         model: 'gpt-4',
         messages: [
           { role: 'system', content: `${SPARTAN_SYSTEM_PROMPT}\n\nConvert the following content into strict Spartan format:` },
@@ -151,7 +148,15 @@ Context: ${additionalContext}
       response = spartanProcessed;
     } else {
       // Use GPT directly
-      response = await getOpenAIClient().chat.completions.create({
+      const openaiClient = getOpenAIClient();
+      if (!openaiClient) {
+        return {
+          success: false,
+          error: 'Spartan content generation is not available. Please configure your OPENAI_API_KEY to use this feature.'
+        };
+      }
+      
+      response = await openaiClient.chat.completions.create({
         model: 'gpt-4',
         messages: [
           { role: 'system', content: SPARTAN_SYSTEM_PROMPT },
