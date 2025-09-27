@@ -116,9 +116,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // New unified content generation endpoint (moved earlier to prevent conflicts)
   app.use('/api/generate-unified', generateContentUnifiedRouter);
   
-  // Unified monorepo API endpoints (working version)
-  const unifiedRouter = await import('./api/unified');
-  app.use('/api', unifiedRouter.default);
+  // Unified monorepo API endpoints (temporarily disabled due to vite config import issue)
+  // const unifiedRouter = await import('./api/unified');
+  // app.use('/api', unifiedRouter.default);
 
   // Compliance API routes
   app.post('/api/compliance/enhance', enhanceCompliance);

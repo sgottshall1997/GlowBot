@@ -3,7 +3,8 @@ dotenv.config();
 
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+// Temporarily comment out vite import to fix startup issue
+// import { setupVite, serveStatic, log } from "./vite";
 import { requestTrackingMiddleware, errorTrackingMiddleware, performanceMonitoringMiddleware } from "./middleware/observability.middleware";
 import cron from "node-cron";
 import { pullPerplexityTrends } from "./services/perplexityTrendFetcher";
@@ -43,7 +44,7 @@ app.use((req, res, next) => {
         logLine = logLine.slice(0, 79) + "…";
       }
 
-      log(logLine);
+      console.log(logLine);
     }
   });
 
@@ -64,13 +65,22 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
+  // Temporarily bypass vite setup due to import issue
+  // Serve static files if they exist
+  const path = await import("path");
+  const fs = await import("fs");
+  const distPath = path.resolve(process.cwd(), "dist/public");
+  
+  if (fs.existsSync(distPath)) {
+    app.use(express.static(distPath));
+    app.use("*", (_req, res) => {
+      res.sendFile(path.resolve(distPath, "index.html"));
+    });
   } else {
-    serveStatic(app);
+    // Fallback for development
+    app.get("*", (_req, res) => {
+      res.send("<h1>Development Server</h1><p>Frontend build not found. Run <code>npm run build</code> first.</p>");
+    });
   }
 
   // Use environment port or default to 5000
@@ -81,7 +91,7 @@ app.use((req, res, next) => {
     host: "0.0.0.0",
     reusePort: true,
   }, async () => {
-    log(`serving on port ${port}`);
+    console.log(`serving on port ${port}`);
     
     // 🛑 DISABLED: Automatic scheduled job initialization to prevent unauthorized job creation
     console.log('🚫 DISABLED: Automatic scheduled job initialization disabled to prevent unauthorized job creation');
