@@ -190,33 +190,33 @@ export const advancedContentOptimizations = pgTable("advanced_content_optimizati
   titleOptimization: decimal("title_optimization"), // 0-1 score for title quality
   metaDescriptionScore: decimal("meta_description_score"), // 0-1 score for meta description
   headingStructureScore: decimal("heading_structure_score"), // 0-1 score for proper heading usage
-  
+
   // Readability Analysis
   fleschKincaidScore: decimal("flesch_kincaid_score"), // Standard readability score
   sentenceLengthVariation: decimal("sentence_length_variation"), // Measure of sentence variety
   passiveVoicePercentage: decimal("passive_voice_percentage"), // % of sentences with passive voice
   adverbDensity: decimal("adverb_density"), // Percentage of adverbs (potentially weakening content)
-  
+
   // Engagement Metrics
   emotionalToneAnalysis: jsonb("emotional_tone_analysis"), // Object with emotional tone scores
   engagementPrediction: decimal("engagement_prediction"), // Predicted engagement score
   targetAudienceRelevance: decimal("target_audience_relevance"), // Relevance to specified audience
-  
+
   // Competitive Analysis
   uniquenessVsCompetitors: decimal("uniqueness_vs_competitors"), // Uniqueness compared to top content
   topPerformingPhrases: text("top_performing_phrases").array(), // Phrases that engage well
   competitorKeyGaps: text("competitor_key_gaps").array(), // Content gaps vs competitors
-  
+
   // Content Quality
   grammarIssuesCount: integer("grammar_issues_count"), // Number of grammar issues
   spellingIssuesCount: integer("spelling_issues_count"), // Number of spelling issues
   brandVoiceConsistency: decimal("brand_voice_consistency"), // Consistency with brand voice
   citationNeeds: text("citation_needs").array(), // Areas that need citation/backing
-  
+
   // Recommendations
   optimizationSuggestions: jsonb("optimization_suggestions"), // Structured suggestions
   abTestingSuggestions: jsonb("ab_testing_suggestions"), // Suggestions for testing variations
-  
+
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -226,18 +226,18 @@ export const contentRatings = pgTable("content_ratings", {
   id: serial("id").primaryKey(),
   contentHistoryId: integer("content_history_id").notNull().references(() => contentHistory.id, { onDelete: 'cascade' }),
   userId: integer("user_id").references(() => users.id, { onDelete: 'set null' }),
-  
+
   // Overall and platform-specific ratings (1-100)
   overallRating: integer("overall_rating"), // General content quality
   instagramRating: integer("instagram_rating"), // Instagram caption quality
   tiktokRating: integer("tiktok_rating"), // TikTok caption quality
   youtubeRating: integer("youtube_rating"), // YouTube Shorts caption quality
   twitterRating: integer("twitter_rating"), // X (Twitter) caption quality
-  
+
   // Additional metadata
   notes: text("notes"), // Optional user notes about the rating
   ratedAt: timestamp("rated_at").defaultNow().notNull(),
-  
+
 }, (table) => {
   return {
     unq: unique().on(table.contentHistoryId, table.userId),
@@ -247,41 +247,41 @@ export const contentRatings = pgTable("content_ratings", {
 // Smart learning patterns extracted from high-rated content
 export const contentPatterns = pgTable("content_patterns", {
   id: serial("id").primaryKey(),
-  
+
   // Pattern identification
   patternName: text("pattern_name").notNull(), // e.g., "high_engagement_beauty_hooks"
   description: text("description"), // Human-readable description
-  
+
   // Content attributes that define this pattern
   niche: text("niche"),
   templateType: text("template_type"),
   tone: text("tone"),
   platform: text("platform"), // instagram, tiktok, youtube, twitter, or "all"
-  
+
   // Pattern characteristics
   averageRating: decimal("average_rating").notNull(), // Average rating of content matching this pattern
   sampleCount: integer("sample_count").notNull(), // Number of samples used to derive pattern
   confidence: decimal("confidence").notNull(), // Confidence score (0-1)
-  
+
   // Structural patterns
   averageWordCount: integer("average_word_count"),
   commonPhrases: text("common_phrases").array(), // Frequently used phrases
   sentenceStructures: text("sentence_structures").array(), // Common sentence patterns
-  
+
   // Content style attributes
   emotionalTone: text("emotional_tone"), // excited, calm, urgent, etc.
   callToActionStyle: text("call_to_action_style"), // direct, subtle, question, etc.
   hookType: text("hook_type"), // question, statement, stat, story, etc.
-  
+
   // Performance insights
   bestPerformingElements: jsonb("best_performing_elements"), // Structured data about what works
   avoidancePatterns: jsonb("avoidance_patterns"), // What to avoid based on low ratings
-  
+
   // Pattern lifecycle
   isActive: boolean("is_active").notNull().default(true),
   lastUpdated: timestamp("last_updated").defaultNow().notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  
+
   // Pattern validation
   minimumSamples: integer("minimum_samples").notNull().default(5), // Min samples needed to trust pattern
 });
@@ -290,23 +290,23 @@ export const contentPatterns = pgTable("content_patterns", {
 export const userContentPreferences = pgTable("user_content_preferences", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
-  
+
   // Learning system preferences
   useSmartLearning: boolean("use_smart_learning").notNull().default(true), // "Use my best-rated style"
   learningIntensity: text("learning_intensity").notNull().default("moderate"), // conservative, moderate, aggressive
-  
+
   // Minimum rating thresholds for pattern extraction
   minOverallRating: integer("min_overall_rating").notNull().default(70),
   minPlatformRating: integer("min_platform_rating").notNull().default(65),
-  
+
   // User-specific pattern weights
   personalizedWeights: jsonb("personalized_weights"), // Custom weights for different attributes
-  
+
   // Feedback behavior tracking
   totalRatingsGiven: integer("total_ratings_given").notNull().default(0),
   averageRatingGiven: decimal("average_rating_given"),
   ratingConsistency: decimal("rating_consistency"), // How consistent user ratings are
-  
+
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => {
@@ -320,12 +320,12 @@ export const patternApplications = pgTable("pattern_applications", {
   id: serial("id").primaryKey(),
   contentHistoryId: integer("content_history_id").notNull().references(() => contentHistory.id, { onDelete: 'cascade' }),
   patternId: integer("pattern_id").references(() => contentPatterns.id, { onDelete: 'set null' }),
-  
+
   // Application metadata
   appliedAt: timestamp("applied_at").defaultNow().notNull(),
   applicationStrength: decimal("application_strength"), // How strongly the pattern was applied (0-1)
   modifiedAttributes: text("modified_attributes").array(), // Which attributes were influenced
-  
+
   // Results tracking
   resultingRating: integer("resulting_rating"), // Rating received after applying pattern
   patternEffectiveness: decimal("pattern_effectiveness"), // Calculated effectiveness score
@@ -419,26 +419,26 @@ export const apiRateLimits = pgTable("api_rate_limits", {
 export const claudeAiSuggestions = pgTable("claude_ai_suggestions", {
   id: serial("id").primaryKey(),
   niche: varchar("niche", { length: 50 }).notNull(), // beauty, tech, fashion, fitness, food, travel, pets
-  
+
   // Suggestion metadata
   suggestionType: varchar("suggestion_type", { length: 50 }).notNull(), // style_improvement, hook_optimization, engagement_boost, cta_enhancement
   category: varchar("category", { length: 50 }).notNull(), // writing_style, structure, tone, format, platform_optimization
-  
+
   // The actual suggestion content
   suggestion: text("suggestion").notNull(), // The Claude recommendation
   context: text("context"), // When/where this suggestion applies
   example: text("example"), // Example implementation of the suggestion
-  
+
   // Effectiveness tracking
   timesUsed: integer("times_used").notNull().default(0),
   effectiveness: decimal("effectiveness", { precision: 3, scale: 2 }).notNull().default("0.5"), // Effectiveness score (0-1)
   // Note: using effectiveness instead of success_rate and avg_rating_increase
-  
+
   // Suggestion validation
   isValidated: boolean("is_validated").notNull().default(false), // Has this been tested?
   confidence: varchar("confidence", { length: 10 }), // Claude's confidence in this suggestion (kept as varchar to match DB)
   source: varchar("source", { length: 50 }), // automated_analysis, user_feedback, pattern_analysis
-  
+
   // Content targeting
   templateTypes: text("template_types").array(), // Which templates this applies to
   platforms: text("platforms").array(), // Which platforms this works best on
@@ -446,16 +446,16 @@ export const claudeAiSuggestions = pgTable("claude_ai_suggestions", {
   templateType: varchar("template_type", { length: 50 }), // Single template type
   platform: varchar("platform", { length: 50 }), // Single platform
   tone: varchar("tone", { length: 50 }), // Single tone
-  
+
   // Performance data
   appliedToContent: integer("applied_to_content").notNull().default(0), // How many times used
   usageCount: integer("usage_count").notNull().default(0), // Usage tracking
   reasoning: text("reasoning"), // AI reasoning for suggestion
-  
+
   // Lifecycle management
   isActive: boolean("is_active").notNull().default(true),
   priority: integer("priority").notNull().default(50), // 1-100, higher = more important
-  
+
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -465,20 +465,20 @@ export const suggestionApplications = pgTable("suggestion_applications", {
   id: serial("id").primaryKey(),
   suggestionId: integer("suggestion_id").notNull().references(() => claudeAiSuggestions.id, { onDelete: 'cascade' }),
   contentHistoryId: integer("content_history_id").notNull().references(() => contentHistory.id, { onDelete: 'cascade' }),
-  
+
   // Application details
   appliedAt: timestamp("applied_at").defaultNow().notNull(),
   applicationMethod: text("application_method"), // automatic, manual, a_b_test
-  
+
   // Results tracking
   beforeRating: integer("before_rating"), // Rating before applying suggestion
   afterRating: integer("after_rating"), // Rating after applying suggestion
   improvementScore: decimal("improvement_score"), // Calculated improvement
-  
+
   // User feedback on the suggestion
   userFeedback: text("user_feedback"),
   userRating: integer("user_rating"), // User's rating of the suggestion (1-10)
-  
+
   // Metadata
   metadata: jsonb("metadata"), // Additional details about the application
 });
@@ -487,31 +487,31 @@ export const suggestionApplications = pgTable("suggestion_applications", {
 export const nicheInsights = pgTable("niche_insights", {
   id: serial("id").primaryKey(),
   niche: text("niche").notNull(),
-  
+
   // Content performance patterns
   bestPerformingTemplates: text("best_performing_templates").array(),
   topTones: text("top_tones").array(),
   highEngagementWords: text("high_engagement_words").array(),
   lowEngagementWords: text("low_engagement_words").array(),
-  
+
   // Platform-specific insights
   platformPreferences: jsonb("platform_preferences"), // Which platforms work best for this niche
   optimalContentLength: jsonb("optimal_content_length"), // Length preferences by platform
-  
+
   // Trend analysis
   trendingKeywords: text("trending_keywords").array(),
   seasonalPatterns: jsonb("seasonal_patterns"),
   audiencePreferences: jsonb("audience_preferences"),
-  
+
   // Performance metrics
   avgRating: decimal("avg_rating"),
   totalContent: integer("total_content").notNull().default(0),
   lastAnalyzed: timestamp("last_analyzed").defaultNow().notNull(),
-  
+
   // Analysis metadata
   dataQuality: decimal("data_quality"), // How reliable this insight is (0-100)
   sampleSize: integer("sample_size"), // Number of content pieces analyzed
-  
+
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => {
@@ -540,18 +540,18 @@ export const scheduledBulkJobs = pgTable("scheduled_bulk_jobs", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   name: text("name").notNull(), // User-friendly name for the scheduled job
-  
+
   // Schedule configuration
   scheduleTime: text("schedule_time").notNull(), // Format: "HH:mm" (e.g., "05:00")
   timezone: text("timezone").notNull().default("America/New_York"), // User's timezone
   isActive: boolean("is_active").notNull().default(true), // Whether the job should run
-  
+
   // Generation settings (stored as JSON to preserve all configuration)
   selectedNiches: text("selected_niches").array().notNull(), // Array of niche strings
   tones: text("tones").array().notNull(), // Array of tone strings
   templates: text("templates").array().notNull(), // Array of template strings
   platforms: text("platforms").array().notNull(), // Array of platform strings
-  
+
   // Advanced options
   useExistingProducts: boolean("use_existing_products").notNull().default(true),
   generateAffiliateLinks: boolean("generate_affiliate_links").notNull().default(false),
@@ -559,18 +559,18 @@ export const scheduledBulkJobs = pgTable("scheduled_bulk_jobs", {
   topRatedStyleUsed: boolean("top_rated_style_used").notNull().default(false),
   aiModel: text("ai_model").notNull().default("claude"), // AI model to use for generation
   affiliateId: text("affiliate_id").default("sgottshall107-20"),
-  
+
   // Webhook configuration
   webhookUrl: text("webhook_url"),
   sendToMakeWebhook: boolean("send_to_make_webhook").notNull().default(true),
-  
+
   // Execution tracking
   lastRunAt: timestamp("last_run_at"),
   nextRunAt: timestamp("next_run_at"),
   totalRuns: integer("total_runs").notNull().default(0),
   consecutiveFailures: integer("consecutive_failures").notNull().default(0),
   lastError: text("last_error"),
-  
+
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -850,7 +850,7 @@ export const dailyScraperCache = pgTable("daily_scraper_cache", {
 // Content versions for immutable content snapshots and rating
 export const cookaingContentVersions = pgTable("cookaing_content_versions", {
   id: serial("id").primaryKey(),
-  
+
   // CookAIng-specific fields
   campaignId: integer("campaign_id"), // Optional reference to campaign
   recipeId: integer("recipe_id"), // Optional reference to recipe
@@ -864,7 +864,7 @@ export const cookaingContentVersions = pgTable("cookaing_content_versions", {
   payloadJson: jsonb("payload_json").notNull(), // immutable snapshot of the content
   createdBy: text("created_by"),
   version: integer("version").notNull().default(1),
-  
+
   // GlowBot parity fields for exact compatibility
   userId: integer("user_id").references(() => users.id, { onDelete: 'set null' }), // Optional user reference
   sessionId: text("session_id"), // For preventing duplicates within sessions
@@ -885,7 +885,7 @@ export const cookaingContentVersions = pgTable("cookaing_content_versions", {
   aiModel: text("ai_model"), // AI model used (ChatGPT, Claude, etc.)
   contentFormat: text("content_format"), // Regular Format, Spartan Format, etc.
   topRatedStyleUsed: boolean("top_rated_style_used").default(false), // Whether smart style was used
-  
+
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => {
   return {
@@ -898,7 +898,7 @@ export const cookaingContentVersions = pgTable("cookaing_content_versions", {
 export const cookaingContentRatings = pgTable("cookaing_content_ratings", {
   id: serial("id").primaryKey(),
   versionId: integer("version_id").notNull().references(() => cookaingContentVersions.id, { onDelete: 'cascade' }),
-  
+
   // CookAIng-specific advanced rating fields
   userScore: integer("user_score"), // 1–100 manual rating
   aiVirality: integer("ai_virality"), // 1–10
@@ -909,7 +909,7 @@ export const cookaingContentRatings = pgTable("cookaing_content_ratings", {
   reasons: text("reasons").array(), // ['catchy','clear','on-brand','too-long',...]
   isWinner: boolean("is_winner").notNull().default(false),
   createdBy: text("created_by"),
-  
+
   // GlowBot parity fields for exact compatibility
   userId: integer("user_id").references(() => users.id, { onDelete: 'set null' }), // User who rated
   overallRating: integer("overall_rating"), // General content quality (1-100)
@@ -917,7 +917,7 @@ export const cookaingContentRatings = pgTable("cookaing_content_ratings", {
   tiktokRating: integer("tiktok_rating"), // TikTok caption quality (1-100)
   youtubeRating: integer("youtube_rating"), // YouTube Shorts caption quality (1-100)
   twitterRating: integer("twitter_rating"), // X (Twitter) caption quality (1-100)
-  
+
   // Notes and timestamps
   notes: text("notes"), // User notes about the rating
   ratedAt: timestamp("rated_at").defaultNow().notNull(), // GlowBot compatibility
@@ -1978,609 +1978,6 @@ export type ContentExport = typeof contentExports.$inferSelect;
 export type InsertContentExport = z.infer<typeof insertContentExportSchema>;
 
 // ================================================================
-// CookAIng Marketing Engine Extension Tables (Phase 1)
-// ================================================================
-
-// Media assets for content enhancements
-export const mediaAssets = pgTable("media_assets", {
-  id: serial("id").primaryKey(),
-  type: text("type").notNull(), // 'image' | 'video' | 'audio'
-  source: text("source").notNull().default("upload"), // 'gen' | 'upload'
-  url: text("url").notNull(),
-  thumbUrl: text("thumb_url"),
-  metadataJson: jsonb("metadata_json"),
-  status: text("status").notNull().default("active"), // 'active' | 'processing' | 'failed'
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (table) => {
-  return {
-    typeIdx: index("media_assets_type_idx").on(table.type),
-    statusIdx: index("media_assets_status_idx").on(table.status),
-    createdIdx: index("media_assets_created_idx").on(table.createdAt),
-  };
-});
-
-// Content enhancements (AI-generated variations)
-export const contentEnhancements = pgTable("content_enhancements", {
-  id: serial("id").primaryKey(),
-  versionId: integer("version_id"), // FK to existing content versions
-  enhancement: text("enhancement").notNull(), // 'rewrite' | 'spin' | 'tts' | 'image' | 'video'
-  inputsJson: jsonb("inputs_json").notNull(),
-  outputsJson: jsonb("outputs_json"),
-  provider: text("provider").notNull(), // 'openai' | 'anthropic' | 'elevenlabs' | etc
-  status: text("status").notNull().default("pending"), // 'pending' | 'completed' | 'failed'
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (table) => {
-  return {
-    versionIdx: index("content_enhancements_version_idx").on(table.versionId),
-    enhancementIdx: index("content_enhancements_enhancement_idx").on(table.enhancement),
-    statusIdx: index("content_enhancements_status_idx").on(table.status),
-  };
-});
-
-// Competitor posts for analysis
-export const competitorPosts = pgTable("competitor_posts", {
-  id: serial("id").primaryKey(),
-  sourcePlatform: text("source_platform").notNull(),
-  author: text("author").notNull(),
-  url: text("url").notNull(),
-  capturedAt: timestamp("captured_at").defaultNow().notNull(),
-  text: text("text"),
-  metricsJson: jsonb("metrics_json"), // likes, shares, comments, etc
-  tags: text("tags").array(), // array of tags
-}, (table) => {
-  return {
-    platformIdx: index("competitor_posts_platform_idx").on(table.sourcePlatform),
-    capturedIdx: index("competitor_posts_captured_idx").on(table.capturedAt),
-    authorIdx: index("competitor_posts_author_idx").on(table.author),
-  };
-});
-
-// Sentiment analysis snapshots
-export const sentimentSnapshots = pgTable("sentiment_snapshots", {
-  id: serial("id").primaryKey(),
-  scope: text("scope").notNull(), // 'campaign' | 'post' | 'brand'
-  refId: integer("ref_id").notNull(),
-  score: decimal("score", { precision: 3, scale: 2 }).notNull(), // -1.00 to 1.00
-  magnitude: decimal("magnitude", { precision: 3, scale: 2 }).notNull(), // 0.00 to 1.00
-  labelsJson: jsonb("labels_json"), // detailed sentiment breakdown
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (table) => {
-  return {
-    scopeRefIdx: index("sentiment_snapshots_scope_ref_idx").on(table.scope, table.refId),
-    createdIdx: index("sentiment_snapshots_created_idx").on(table.createdAt),
-  };
-});
-
-// Viral potential scores
-export const viralScores = pgTable("viral_scores", {
-  id: serial("id").primaryKey(),
-  contentVersionId: integer("content_version_id").notNull(),
-  featuresJson: jsonb("features_json").notNull(), // engagement, trend, emotion, etc scores
-  score: decimal("score", { precision: 5, scale: 2 }).notNull(), // 0.00 to 100.00
-  model: text("model").notNull().default("baseline"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (table) => {
-  return {
-    versionIdx: index("viral_scores_version_idx").on(table.contentVersionId),
-    scoreIdx: index("viral_scores_score_idx").on(table.score),
-    createdIdx: index("viral_scores_created_idx").on(table.createdAt),
-  };
-});
-
-// Content fatigue signals
-export const fatigueSignals = pgTable("fatigue_signals", {
-  id: serial("id").primaryKey(),
-  segmentId: integer("segment_id"), // optional segment ID
-  topic: text("topic").notNull(),
-  slope: decimal("slope", { precision: 5, scale: 4 }).notNull(), // engagement trend slope
-  lastSeenAt: timestamp("last_seen_at").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (table) => {
-  return {
-    topicIdx: index("fatigue_signals_topic_idx").on(table.topic),
-    segmentIdx: index("fatigue_signals_segment_idx").on(table.segmentId),
-    lastSeenIdx: index("fatigue_signals_last_seen_idx").on(table.lastSeenAt),
-  };
-});
-
-// Social media publishing queue
-export const socialQueue = pgTable("social_queue", {
-  id: serial("id").primaryKey(),
-  platform: text("platform").notNull(), // 'instagram' | 'tiktok' | 'youtube' | 'twitter' | 'facebook'
-  accountId: text("account_id").notNull(),
-  scheduledAt: timestamp("scheduled_at"),
-  payloadJson: jsonb("payload_json").notNull(), // post content, media, hashtags, etc
-  status: text("status").notNull().default("queued"), // 'queued' | 'published' | 'failed' | 'cancelled'
-  resultJson: jsonb("result_json"), // API response, error details, etc
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (table) => {
-  return {
-    platformIdx: index("social_queue_platform_idx").on(table.platform),
-    statusIdx: index("social_queue_status_idx").on(table.status),
-    scheduledIdx: index("social_queue_scheduled_idx").on(table.scheduledAt),
-    createdIdx: index("social_queue_created_idx").on(table.createdAt),
-  };
-});
-
-// Hashtag suggestions for topics/platforms
-export const hashtagSuggestions = pgTable("hashtag_suggestions", {
-  id: serial("id").primaryKey(),
-  topic: text("topic").notNull(),
-  platform: text("platform").notNull(),
-  tags: text("tags").array().notNull(), // array of hashtag strings
-  metricsJson: jsonb("metrics_json"), // popularity, competition, relevance scores
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (table) => {
-  return {
-    topicPlatformIdx: index("hashtag_suggestions_topic_platform_idx").on(table.topic, table.platform),
-    createdIdx: index("hashtag_suggestions_created_idx").on(table.createdAt),
-  };
-});
-
-// Optimal posting times analysis
-export const optimalTimes = pgTable("optimal_times", {
-  id: serial("id").primaryKey(),
-  platform: text("platform").notNull(),
-  segmentId: integer("segment_id"), // optional audience segment
-  timesJson: jsonb("times_json").notNull(), // {monday: ['09:00', '12:00'], ...}
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (table) => {
-  return {
-    platformIdx: index("optimal_times_platform_idx").on(table.platform),
-    segmentIdx: index("optimal_times_segment_idx").on(table.segmentId),
-    createdIdx: index("optimal_times_created_idx").on(table.createdAt),
-  };
-});
-
-// Brand voice profiles for consistency
-export const brandVoiceProfiles = pgTable("brand_voice_profiles", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull().unique(),
-  corpusJson: jsonb("corpus_json").notNull(), // samples, characteristics, tone markers
-  embeddingVector: text("embedding_vector"), // serialized vector for similarity
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (table) => {
-  return {
-    nameIdx: index("brand_voice_profiles_name_idx").on(table.name),
-    createdIdx: index("brand_voice_profiles_created_idx").on(table.createdAt),
-  };
-});
-
-// Approval workflows
-export const approvals = pgTable("approvals", {
-  id: serial("id").primaryKey(),
-  entityType: text("entity_type").notNull(), // 'campaign' | 'artifact' | 'version'
-  entityId: integer("entity_id").notNull(),
-  status: text("status").notNull().default("draft"), // 'draft' | 'review' | 'approved' | 'rejected'
-  assignee: text("assignee"), // user email or ID
-  notes: text("notes"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (table) => {
-  return {
-    entityIdx: index("approvals_entity_idx").on(table.entityType, table.entityId),
-    statusIdx: index("approvals_status_idx").on(table.status),
-    assigneeIdx: index("approvals_assignee_idx").on(table.assignee),
-    createdIdx: index("approvals_created_idx").on(table.createdAt),
-  };
-});
-
-// Collaboration roles and permissions
-export const collaborationRoles = pgTable("collaboration_roles", {
-  id: serial("id").primaryKey(),
-  user: text("user").notNull(), // email or user ID
-  role: text("role").notNull(), // 'admin' | 'editor' | 'viewer' | 'client'
-  scopesJson: jsonb("scopes_json").notNull(), // permissions object
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (table) => {
-  return {
-    userIdx: index("collaboration_roles_user_idx").on(table.user),
-    roleIdx: index("collaboration_roles_role_idx").on(table.role),
-    createdIdx: index("collaboration_roles_created_idx").on(table.createdAt),
-  };
-});
-
-// Content calendar for scheduling
-export const contentCalendar = pgTable("content_calendar", {
-  id: serial("id").primaryKey(),
-  title: text("title").notNull(),
-  startAt: timestamp("start_at").notNull(),
-  endAt: timestamp("end_at").notNull(),
-  channel: text("channel").notNull(), // platform or channel type
-  refId: integer("ref_id"), // reference to campaign, content, etc
-  status: text("status").notNull().default("scheduled"), // 'scheduled' | 'published' | 'cancelled'
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (table) => {
-  return {
-    channelIdx: index("content_calendar_channel_idx").on(table.channel),
-    statusIdx: index("content_calendar_status_idx").on(table.status),
-    startIdx: index("content_calendar_start_idx").on(table.startAt),
-    refIdx: index("content_calendar_ref_idx").on(table.refId),
-  };
-});
-
-// E-commerce product catalog
-export const ecommerceProducts = pgTable("ecommerce_products", {
-  id: serial("id").primaryKey(),
-  source: text("source").notNull(), // 'shopify' | 'woocommerce' | 'manual'
-  externalId: text("external_id").notNull(),
-  title: text("title").notNull(),
-  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
-  url: text("url").notNull(),
-  image: text("image"),
-  inventoryJson: jsonb("inventory_json"), // stock, variants, etc
-  tags: text("tags").array(), // product tags
-}, (table) => {
-  return {
-    sourceIdx: index("ecommerce_products_source_idx").on(table.source),
-    externalIdIdx: index("ecommerce_products_external_id_idx").on(table.externalId),
-    titleIdx: index("ecommerce_products_title_idx").on(table.title),
-    priceIdx: index("ecommerce_products_price_idx").on(table.price),
-  };
-});
-
-// Advanced messaging sequences
-export const messagingSequences = pgTable("messaging_sequences", {
-  id: serial("id").primaryKey(),
-  channel: text("channel").notNull(), // 'email' | 'sms' | 'whatsapp'
-  name: text("name").notNull(),
-  stepsJson: jsonb("steps_json").notNull(), // array of sequence steps
-  triggersJson: jsonb("triggers_json").notNull(), // trigger conditions
-  status: text("status").notNull().default("draft"), // 'active' | 'paused' | 'draft'
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (table) => {
-  return {
-    channelIdx: index("messaging_sequences_channel_idx").on(table.channel),
-    statusIdx: index("messaging_sequences_status_idx").on(table.status),
-    nameIdx: index("messaging_sequences_name_idx").on(table.name),
-    createdIdx: index("messaging_sequences_created_idx").on(table.createdAt),
-  };
-});
-
-// Content moderation reports
-export const moderationReports = pgTable("moderation_reports", {
-  id: serial("id").primaryKey(),
-  versionId: integer("version_id").notNull(),
-  checksJson: jsonb("checks_json").notNull(), // toxicity, spam, inappropriate, etc
-  decisionsJson: jsonb("decisions_json").notNull(), // approved, blocked, manual_review
-  status: text("status").notNull().default("pending"), // 'passed' | 'flagged' | 'blocked'
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (table) => {
-  return {
-    versionIdx: index("moderation_reports_version_idx").on(table.versionId),
-    statusIdx: index("moderation_reports_status_idx").on(table.status),
-    createdIdx: index("moderation_reports_created_idx").on(table.createdAt),
-  };
-});
-
-// Plagiarism detection reports
-export const plagiarismReports = pgTable("plagiarism_reports", {
-  id: serial("id").primaryKey(),
-  versionId: integer("version_id").notNull(),
-  score: decimal("score", { precision: 5, scale: 2 }).notNull(), // 0.00 to 100.00
-  matchesJson: jsonb("matches_json").notNull(), // array of match objects
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (table) => {
-  return {
-    versionIdx: index("plagiarism_reports_version_idx").on(table.versionId),
-    scoreIdx: index("plagiarism_reports_score_idx").on(table.score),
-    createdIdx: index("plagiarism_reports_created_idx").on(table.createdAt),
-  };
-});
-
-// Unified content records table for both GlowBot and CookAIng
-export const contentRecords = pgTable("content_records", {
-  id: varchar("id").primaryKey(), // Unified ID from both apps
-  sourceApp: text("source_app").notNull(), // 'glowbot' or 'cookAIng'
-  contentType: text("content_type").notNull(), // Type specific to each app
-  title: text("title"),
-  body: text("body"), // Main content text
-  blocks: jsonb("blocks"), // Flexible content structure as JSON
-  metadata: jsonb("metadata").notNull(), // App-specific metadata
-  rating: integer("rating"), // 1-5 user rating
-  isFavorite: boolean("is_favorite").default(false),
-  dedupeHash: varchar("dedupe_hash", { length: 32 }), // For content deduplication
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-}, (table) => {
-  return {
-    sourceIdx: index("content_records_source_idx").on(table.sourceApp),
-    typeIdx: index("content_records_type_idx").on(table.contentType),
-    createdIdx: index("content_records_created_idx").on(table.createdAt),
-    ratingIdx: index("content_records_rating_idx").on(table.rating),
-    favoriteIdx: index("content_records_favorite_idx").on(table.isFavorite),
-    dedupeIdx: index("content_records_dedupe_idx").on(table.dedupeHash),
-    // Composite indexes for common queries
-    appTypeIdx: index("content_records_app_type_idx").on(table.sourceApp, table.contentType),
-    appCreatedIdx: index("content_records_app_created_idx").on(table.sourceApp, table.createdAt),
-  };
-});
-
-// ================================================================
-// Customer Support Center Tables
-// ================================================================
-
-// Support ticket categories
-export const supportCategories = pgTable("support_categories", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull().unique(),
-  description: text("description"),
-  parentId: integer("parent_id"),
-  isActive: boolean("is_active").notNull().default(true),
-  sortOrder: integer("sort_order").default(0),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-}, (table) => {
-  return {
-    nameIdx: index("support_categories_name_idx").on(table.name),
-    activeIdx: index("support_categories_active_idx").on(table.isActive),
-    parentIdx: index("support_categories_parent_idx").on(table.parentId),
-    parentFk: foreignKey({
-      columns: [table.parentId],
-      foreignColumns: [table.id],
-    }),
-  };
-});
-
-// Support tickets
-export const supportTickets = pgTable("support_tickets", {
-  id: serial("id").primaryKey(),
-  title: text("title").notNull(),
-  description: text("description").notNull(),
-  status: text("status").notNull().default("open"), // open, in_progress, resolved, closed
-  priority: text("priority").notNull().default("medium"), // low, medium, high, urgent
-  categoryId: integer("category_id").references(() => supportCategories.id),
-  assignedToUserId: integer("assigned_to_user_id").references(() => users.id),
-  createdByUserId: integer("created_by_user_id").references(() => users.id),
-  customerEmail: text("customer_email"),
-  customerName: text("customer_name"),
-  organizationId: integer("organization_id").references(() => organizations.id),
-  tags: text("tags").array().default([]),
-  attachments: jsonb("attachments"), // Array of file attachments
-  metadata: jsonb("metadata"), // Additional ticket metadata
-  resolvedAt: timestamp("resolved_at"),
-  firstResponseAt: timestamp("first_response_at"),
-  lastActivityAt: timestamp("last_activity_at").defaultNow(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-}, (table) => {
-  return {
-    statusIdx: index("support_tickets_status_idx").on(table.status),
-    priorityIdx: index("support_tickets_priority_idx").on(table.priority),
-    categoryIdx: index("support_tickets_category_idx").on(table.categoryId),
-    assignedIdx: index("support_tickets_assigned_idx").on(table.assignedToUserId),
-    customerIdx: index("support_tickets_customer_idx").on(table.customerEmail),
-    orgIdx: index("support_tickets_org_idx").on(table.organizationId),
-    activityIdx: index("support_tickets_activity_idx").on(table.lastActivityAt),
-    createdIdx: index("support_tickets_created_idx").on(table.createdAt),
-  };
-});
-
-// Support ticket responses/comments
-export const supportResponses = pgTable("support_responses", {
-  id: serial("id").primaryKey(),
-  ticketId: integer("ticket_id").notNull().references(() => supportTickets.id, { onDelete: 'cascade' }),
-  userId: integer("user_id").references(() => users.id),
-  content: text("content").notNull(),
-  isInternal: boolean("is_internal").notNull().default(false), // Internal notes vs customer-facing
-  responseType: text("response_type").notNull().default("comment"), // comment, status_change, assignment_change
-  attachments: jsonb("attachments"),
-  metadata: jsonb("metadata"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-}, (table) => {
-  return {
-    ticketIdx: index("support_responses_ticket_idx").on(table.ticketId),
-    userIdx: index("support_responses_user_idx").on(table.userId),
-    typeIdx: index("support_responses_type_idx").on(table.responseType),
-    createdIdx: index("support_responses_created_idx").on(table.createdAt),
-  };
-});
-
-// Knowledge base articles
-export const knowledgeBaseArticles = pgTable("knowledge_base_articles", {
-  id: serial("id").primaryKey(),
-  title: text("title").notNull(),
-  slug: text("slug").notNull().unique(),
-  content: text("content").notNull(),
-  excerpt: text("excerpt"),
-  categoryId: integer("category_id").references(() => supportCategories.id),
-  authorId: integer("author_id").references(() => users.id),
-  status: text("status").notNull().default("draft"), // draft, published, archived
-  isPublic: boolean("is_public").notNull().default(true),
-  viewCount: integer("view_count").default(0),
-  helpfulCount: integer("helpful_count").default(0),
-  notHelpfulCount: integer("not_helpful_count").default(0),
-  tags: text("tags").array().default([]),
-  metadata: jsonb("metadata"),
-  publishedAt: timestamp("published_at"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-}, (table) => {
-  return {
-    slugIdx: uniqueIndex("knowledge_base_articles_slug_idx").on(table.slug),
-    statusIdx: index("knowledge_base_articles_status_idx").on(table.status),
-    categoryIdx: index("knowledge_base_articles_category_idx").on(table.categoryId),
-    authorIdx: index("knowledge_base_articles_author_idx").on(table.authorId),
-    publicIdx: index("knowledge_base_articles_public_idx").on(table.isPublic),
-    publishedIdx: index("knowledge_base_articles_published_idx").on(table.publishedAt),
-  };
-});
-
-// Live chat sessions
-export const liveChatSessions = pgTable("live_chat_sessions", {
-  id: serial("id").primaryKey(),
-  sessionId: text("session_id").notNull().unique(),
-  customerEmail: text("customer_email"),
-  customerName: text("customer_name"),
-  assignedToUserId: integer("assigned_to_user_id").references(() => users.id),
-  status: text("status").notNull().default("active"), // active, waiting, ended
-  organizationId: integer("organization_id").references(() => organizations.id),
-  metadata: jsonb("metadata"),
-  startedAt: timestamp("started_at").defaultNow().notNull(),
-  endedAt: timestamp("ended_at"),
-  lastActivityAt: timestamp("last_activity_at").defaultNow(),
-}, (table) => {
-  return {
-    sessionIdx: uniqueIndex("live_chat_sessions_session_idx").on(table.sessionId),
-    statusIdx: index("live_chat_sessions_status_idx").on(table.status),
-    assignedIdx: index("live_chat_sessions_assigned_idx").on(table.assignedToUserId),
-    customerIdx: index("live_chat_sessions_customer_idx").on(table.customerEmail),
-    orgIdx: index("live_chat_sessions_org_idx").on(table.organizationId),
-    activityIdx: index("live_chat_sessions_activity_idx").on(table.lastActivityAt),
-  };
-});
-
-// Live chat messages
-export const liveChatMessages = pgTable("live_chat_messages", {
-  id: serial("id").primaryKey(),
-  sessionId: integer("session_id").notNull().references(() => liveChatSessions.id, { onDelete: 'cascade' }),
-  senderId: integer("sender_id").references(() => users.id),
-  senderType: text("sender_type").notNull(), // customer, agent, system
-  content: text("content").notNull(),
-  messageType: text("message_type").notNull().default("text"), // text, image, file, system
-  attachments: jsonb("attachments"),
-  metadata: jsonb("metadata"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (table) => {
-  return {
-    sessionIdx: index("live_chat_messages_session_idx").on(table.sessionId),
-    senderIdx: index("live_chat_messages_sender_idx").on(table.senderId),
-    typeIdx: index("live_chat_messages_type_idx").on(table.messageType),
-    createdIdx: index("live_chat_messages_created_idx").on(table.createdAt),
-  };
-});
-
-// Support metrics and SLA tracking
-export const supportMetrics = pgTable("support_metrics", {
-  id: serial("id").primaryKey(),
-  ticketId: integer("ticket_id").references(() => supportTickets.id, { onDelete: 'cascade' }),
-  sessionId: integer("session_id").references(() => liveChatSessions.id, { onDelete: 'cascade' }),
-  metricType: text("metric_type").notNull(), // first_response_time, resolution_time, satisfaction_score
-  value: decimal("value", { precision: 10, scale: 2 }).notNull(),
-  unit: text("unit").notNull(), // minutes, hours, days, score
-  recordedAt: timestamp("recorded_at").defaultNow().notNull(),
-}, (table) => {
-  return {
-    ticketIdx: index("support_metrics_ticket_idx").on(table.ticketId),
-    sessionIdx: index("support_metrics_session_idx").on(table.sessionId),
-    typeIdx: index("support_metrics_type_idx").on(table.metricType),
-    recordedIdx: index("support_metrics_recorded_idx").on(table.recordedAt),
-  };
-});
-
-// ================================================================
-// Zod schemas for the new tables
-// ================================================================
-
-export const insertContentRecordSchema = createInsertSchema(contentRecords);
-export const insertMediaAssetSchema = createInsertSchema(mediaAssets);
-export const insertContentEnhancementSchema = createInsertSchema(contentEnhancements);
-export const insertCompetitorPostSchema = createInsertSchema(competitorPosts);
-export const insertSentimentSnapshotSchema = createInsertSchema(sentimentSnapshots);
-export const insertViralScoreSchema = createInsertSchema(viralScores);
-export const insertFatigueSignalSchema = createInsertSchema(fatigueSignals);
-export const insertSocialQueueSchema = createInsertSchema(socialQueue);
-export const insertHashtagSuggestionSchema = createInsertSchema(hashtagSuggestions);
-export const insertOptimalTimesSchema = createInsertSchema(optimalTimes);
-export const insertBrandVoiceProfileSchema = createInsertSchema(brandVoiceProfiles);
-export const insertApprovalSchema = createInsertSchema(approvals);
-export const insertCollaborationRoleSchema = createInsertSchema(collaborationRoles);
-export const insertContentCalendarSchema = createInsertSchema(contentCalendar);
-export const insertEcommerceProductSchema = createInsertSchema(ecommerceProducts);
-export const insertMessagingSequenceSchema = createInsertSchema(messagingSequences);
-export const insertModerationReportSchema = createInsertSchema(moderationReports);
-export const insertPlagiarismReportSchema = createInsertSchema(plagiarismReports);
-
-// Customer Support Center schemas
-export const insertSupportCategorySchema = createInsertSchema(supportCategories);
-export const insertSupportTicketSchema = createInsertSchema(supportTickets);
-export const insertSupportResponseSchema = createInsertSchema(supportResponses);
-export const insertKnowledgeBaseArticleSchema = createInsertSchema(knowledgeBaseArticles);
-export const insertLiveChatSessionSchema = createInsertSchema(liveChatSessions);
-export const insertLiveChatMessageSchema = createInsertSchema(liveChatMessages);
-export const insertSupportMetricSchema = createInsertSchema(supportMetrics);
-
-// ================================================================
-// Type exports for the new tables
-// ================================================================
-
-export type ContentRecord = typeof contentRecords.$inferSelect;
-export type InsertContentRecord = z.infer<typeof insertContentRecordSchema>;
-
-export type MediaAsset = typeof mediaAssets.$inferSelect;
-export type InsertMediaAsset = z.infer<typeof insertMediaAssetSchema>;
-
-export type ContentEnhancement = typeof contentEnhancements.$inferSelect;
-export type InsertContentEnhancement = z.infer<typeof insertContentEnhancementSchema>;
-
-export type CompetitorPost = typeof competitorPosts.$inferSelect;
-export type InsertCompetitorPost = z.infer<typeof insertCompetitorPostSchema>;
-
-export type SentimentSnapshot = typeof sentimentSnapshots.$inferSelect;
-export type InsertSentimentSnapshot = z.infer<typeof insertSentimentSnapshotSchema>;
-
-export type ViralScore = typeof viralScores.$inferSelect;
-export type InsertViralScore = z.infer<typeof insertViralScoreSchema>;
-
-export type FatigueSignal = typeof fatigueSignals.$inferSelect;
-export type InsertFatigueSignal = z.infer<typeof insertFatigueSignalSchema>;
-
-export type SocialQueue = typeof socialQueue.$inferSelect;
-export type InsertSocialQueue = z.infer<typeof insertSocialQueueSchema>;
-
-export type HashtagSuggestion = typeof hashtagSuggestions.$inferSelect;
-export type InsertHashtagSuggestion = z.infer<typeof insertHashtagSuggestionSchema>;
-
-export type OptimalTimes = typeof optimalTimes.$inferSelect;
-export type InsertOptimalTimes = z.infer<typeof insertOptimalTimesSchema>;
-
-export type BrandVoiceProfile = typeof brandVoiceProfiles.$inferSelect;
-export type InsertBrandVoiceProfile = z.infer<typeof insertBrandVoiceProfileSchema>;
-
-export type Approval = typeof approvals.$inferSelect;
-export type InsertApproval = z.infer<typeof insertApprovalSchema>;
-
-export type CollaborationRole = typeof collaborationRoles.$inferSelect;
-export type InsertCollaborationRole = z.infer<typeof insertCollaborationRoleSchema>;
-
-export type ContentCalendarItem = typeof contentCalendar.$inferSelect;
-export type InsertContentCalendar = z.infer<typeof insertContentCalendarSchema>;
-
-export type EcommerceProduct = typeof ecommerceProducts.$inferSelect;
-export type InsertEcommerceProduct = z.infer<typeof insertEcommerceProductSchema>;
-
-export type MessagingSequence = typeof messagingSequences.$inferSelect;
-export type InsertMessagingSequence = z.infer<typeof insertMessagingSequenceSchema>;
-
-export type ModerationReport = typeof moderationReports.$inferSelect;
-export type InsertModerationReport = z.infer<typeof insertModerationReportSchema>;
-
-export type PlagiarismReport = typeof plagiarismReports.$inferSelect;
-export type InsertPlagiarismReport = z.infer<typeof insertPlagiarismReportSchema>;
-
-// Customer Support Center types
-export type SupportCategory = typeof supportCategories.$inferSelect;
-export type InsertSupportCategory = z.infer<typeof insertSupportCategorySchema>;
-
-export type SupportTicket = typeof supportTickets.$inferSelect;
-export type InsertSupportTicket = z.infer<typeof insertSupportTicketSchema>;
-
-export type SupportResponse = typeof supportResponses.$inferSelect;
-export type InsertSupportResponse = z.infer<typeof insertSupportResponseSchema>;
-
-export type KnowledgeBaseArticle = typeof knowledgeBaseArticles.$inferSelect;
-export type InsertKnowledgeBaseArticle = z.infer<typeof insertKnowledgeBaseArticleSchema>;
-
-export type LiveChatSession = typeof liveChatSessions.$inferSelect;
-export type InsertLiveChatSession = z.infer<typeof insertLiveChatSessionSchema>;
-
-export type LiveChatMessage = typeof liveChatMessages.$inferSelect;
-export type InsertLiveChatMessage = z.infer<typeof insertLiveChatMessageSchema>;
-
-export type SupportMetric = typeof supportMetrics.$inferSelect;
-export type InsertSupportMetric = z.infer<typeof insertSupportMetricSchema>;
-
-// ================================================================
 // Enhanced Amazon Monetization Tables
 // ================================================================
 
@@ -2821,52 +2218,52 @@ export const productPriceHistory = pgTable("product_price_history", {
 export const productOpportunities = pgTable("product_opportunities", {
   id: serial("id").primaryKey(),
   category: text("category").notNull(),
-  
+
   // 1. Specific Product Details
   specificProduct: text("specific_product").notNull(), // Exact product description
   productFeatures: text("product_features"), // Specific features that differentiate
   whyThisProduct: text("why_this_product").notNull(), // Reasoning for this specific product
-  
+
   // 2. Proof of Demand
   monthlySearchVolume: integer("monthly_search_volume"), // Search volume numbers
   tiktokVideoCount: integer("tiktok_video_count"), // TikTok videos in past 30 days
   redditMentions: integer("reddit_mentions"), // Reddit mentions/complaints in past 90 days
   demandEvidence: text("demand_evidence"), // Additional evidence description
-  
+
   // 3. Competition Analysis
   competitorBrands: jsonb("competitor_brands"), // Array of {name, pricePoint} objects
   marketSaturation: text("market_saturation").notNull(), // LOW/MEDIUM/HIGH
   saturationReasoning: text("saturation_reasoning").notNull(), // Why this saturation level
-  
+
   // 4. Margin Potential
   manufacturingCost: decimal("manufacturing_cost"), // Estimated cost in dollars
   typicalRetailPrice: decimal("typical_retail_price"), // Market retail price
   grossMarginPercent: decimal("gross_margin_percent"), // Calculated margin percentage
   marginCalculation: text("margin_calculation"), // Example: "$8 cost → $35 retail = 77%"
-  
+
   // 5. Target Customer
   targetDemographic: text("target_demographic").notNull(), // Specific demo details
   customerPainPoint: text("customer_pain_point").notNull(), // Specific problem solved
   whereTheySpend: text("where_they_spend"), // Online platforms they use
-  
+
   // 6. Validation Difficulty
   testDifficulty: text("test_difficulty").notNull(), // EASY/MEDIUM/HARD
   testDifficultyReasoning: text("test_difficulty_reasoning").notNull(), // Why this difficulty
   redFlags: text("red_flags"), // Potential issues (returns, education needed, etc)
-  
+
   // 7. Successful Examples
   successfulBrands: jsonb("successful_brands"), // Array of {name, whySuccessful, topContent}
   whatMadeThemWork: text("what_made_them_work"), // Content strategy details
-  
+
   // 8. Go/No-Go Indicators
   goNoGoScore: integer("go_no_go_score"), // Overall score 1-100
   goNoGoIndicators: jsonb("go_no_go_indicators"), // Array of {indicator, status, reasoning}
   recommendation: text("recommendation").notNull(), // WORTH_TESTING/SKIP/MAYBE
-  
+
   // Legacy fields (keeping for backward compatibility)
   opportunity: text("opportunity").notNull(), // Now becomes the specific product name
   reasoning: text("reasoning").notNull(), // Now becomes overall summary
-  
+
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

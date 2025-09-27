@@ -71,10 +71,6 @@ import CookAIngDevTools from "@/pages/cookaing-marketing/devtools";
 import CookAIngIntelligence from "@/pages/cookaing-marketing/intelligence";
 import PublicForm from "@/pages/public-form";
 
-// CookAIng Mode components
-import CookAIngLayout from "@/cookaing-marketing/layouts/CookAIngLayout";
-import CookAIngRouter from "@/components/CookAIngRouter";
-
 import Layout from "@/components/Layout";
 import Footer from "@/components/Footer";
 import { initScraperConsole } from "./lib/scraperConsole";
