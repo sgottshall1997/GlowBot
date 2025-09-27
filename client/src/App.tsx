@@ -27,7 +27,7 @@ import CompetitiveAnalysisPage from "@/pages/competitive-analysis";
 import ExportImportPage from "@/pages/export-import";
 
 // CookAIng Unified Content Generator
-import CookaingUnifiedContentGenerator from "@/cookaing-marketing/pages/UnifiedContentGenerator";
+import CookaingUnifiedContentGenerator from "@/components/UnifiedContentGenerator";
 
 import AiModelConfigPage from "@/pages/ai-model-config";
 import EmojiHashtagTestPage from "@/pages/emoji-hashtag-test";
