@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ChevronDown, Home, Sparkles } from 'lucide-react';
+import { ChevronDown, Sparkles, Bot } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Mode {
@@ -20,18 +20,18 @@ interface Mode {
 
 const modes: Mode[] = [
   {
-    name: 'Main App',
-    value: 'main',
-    href: '/',
-    icon: Home,
-    description: 'Content generation and core features'
-  },
-  {
     name: 'GlowBot',
     value: 'glowbot',
-    href: '/glowbot',
+    href: '/',
     icon: Sparkles,
     description: 'AI-powered viral content generation'
+  },
+  {
+    name: 'ScriptTok',
+    value: 'scriptok',
+    href: '/scriptok',
+    icon: Bot,
+    description: 'Specialized script generation for short-form video'
   }
 ];
 
@@ -40,10 +40,10 @@ const ModeSwitcher: React.FC = () => {
   
   // Determine current mode based on location
   const getCurrentMode = () => {
-    if (location.startsWith('/glowbot')) {
-      return modes.find(m => m.value === 'glowbot') || modes[0];
+    if (location.startsWith('/scriptok')) {
+      return modes.find(m => m.value === 'scriptok') || modes[0];
     }
-    return modes[0]; // Default to main app
+    return modes[0]; // Default to GlowBot
   };
 
   const currentMode = getCurrentMode();
@@ -59,7 +59,7 @@ const ModeSwitcher: React.FC = () => {
           variant="outline"
           className={cn(
             "flex items-center space-x-2 min-w-[140px] justify-between",
-            currentMode.value === 'glowbot' && "border-purple-500 bg-purple-50 dark:bg-purple-950"
+            currentMode.value === 'scriptok' && "border-blue-500 bg-blue-50 dark:bg-blue-950"
           )}
         >
           <div className="flex items-center space-x-2">
@@ -81,8 +81,8 @@ const ModeSwitcher: React.FC = () => {
               onClick={() => handleModeChange(mode)}
               className={cn(
                 "flex flex-col items-start space-y-1 p-3 cursor-pointer",
-                isActive && mode.value === 'glowbot' && "bg-purple-50 dark:bg-purple-950",
-                isActive && mode.value === 'main' && "bg-blue-50 dark:bg-blue-950"
+                isActive && mode.value === 'scriptok' && "bg-blue-50 dark:bg-blue-950",
+                isActive && mode.value === 'glowbot' && "bg-purple-50 dark:bg-purple-950"
               )}
             >
               <div className="flex items-center space-x-2 w-full">
