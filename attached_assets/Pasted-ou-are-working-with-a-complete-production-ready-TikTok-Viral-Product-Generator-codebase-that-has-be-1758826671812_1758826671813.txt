@@ -1,0 +1,112 @@
+ou are working with a complete, production-ready TikTok Viral Product Generator codebase that has been extracted from a larger GlowBot application. Your task is to create a focused, standalone viral content generation platform that leverages real-time trending data, viral content analysis, and AI-powered script generation for maximum engagement and monetization.
+
+🎯 WHAT THIS PLATFORM IS:
+This is a TikTok Viral Product Generator - a sophisticated AI-powered content creation platform that:
+
+Discovers Trending Products: Uses Perplexity API integration to find real-time trending products across multiple niches (beauty, tech, fashion, fitness, food, travel, pets)
+Analyzes Viral Content: Performs comprehensive viral content research on TikTok/Instagram to extract successful hooks, formats, and engagement patterns
+Generates Viral Scripts: Creates AI-powered video scripts optimized for TikTok, Instagram Reels, and YouTube Shorts using proven viral templates
+Monetizes Content: Automatically generates Amazon affiliate links and integrates monetization strategies
+Multi-Platform Optimization: Formats content specifically for different social media platforms with optimal timing and hashtags
+🏗️ SYSTEM ARCHITECTURE OVERVIEW:
+Core Backend Services (Express/Node.js/PostgreSQL):
+
+server/services/perplexityTrends.ts - Real-time product trending detection using Perplexity API
+server/services/tiktokViralResearch.ts - Comprehensive viral content analysis and pattern extraction
+server/services/contentGenerator.ts - AI-powered script generation with viral hooks integration
+server/services/amazonAffiliate.ts - Amazon affiliate link generation and monetization
+server/services/multiPlatformContentGenerator.ts - Platform-specific content optimization
+API Endpoints:
+
+server/api/perplexity-trends/viral-research.ts - Viral content research and analysis
+server/api/amazon.ts - Amazon product integration and affiliate management
+server/api/generateContent.ts - Main content generation engine
+Frontend Components (React/TypeScript):
+
+client/src/components/ContentGenerator.tsx - Main content generation interface
+client/src/components/TrendingProductsList.tsx - Real-time trending products display
+client/src/components/VideoScriptGenerator.tsx - Specialized video script creation
+client/src/components/AmazonAffiliateDropdown.tsx - Amazon integration UI
+Database Schema:
+
+shared/schema.ts - Complete database structure for trending products, content generations, viral research data
+🔧 YOUR TASKS:
+VERIFY SYSTEM CONNECTIVITY:
+
+Ensure all backend services are properly connected and functioning
+Verify database schema is correctly implemented with Drizzle ORM
+Test API endpoints for proper request/response handling
+Confirm environment variables are configured for Perplexity API, OpenAI, and Amazon PA-API
+STREAMLINE THE USER INTERFACE:
+
+Remove any non-essential features that don't directly serve viral content generation
+Focus the dashboard on the core workflow: Discover → Analyze → Generate → Monetize
+Ensure the trending products feed is prominently displayed and functional
+Optimize the content generation form for viral video creation
+ENHANCE THE VIRAL RESEARCH PIPELINE:
+
+Verify the Perplexity integration is pulling real trending products by niche
+Test the viral content analysis system for TikTok/Instagram research
+Ensure viral templates and hooks are being properly extracted and applied
+Validate the content generation uses viral inspiration data
+MONETIZATION INTEGRATION:
+
+Confirm Amazon affiliate link generation is working
+Test affiliate URL injection into generated content
+Verify compliance with FTC guidelines and affiliate disclosures
+Ensure affiliate tracking and analytics are functional
+PLATFORM OPTIMIZATION:
+
+Test multi-platform content generation (TikTok, Instagram, YouTube Shorts)
+Verify platform-specific formatting and optimization
+Ensure proper hashtag and timing recommendations
+Test video duration estimation and script formatting
+📋 VERIFICATION CHECKLIST:
+Backend Functionality:
+
+ Perplexity API connection and trending product fetching
+ TikTok viral research and pattern extraction
+ AI content generation with OpenAI/Claude integration
+ Amazon PA-API connection and affiliate link generation
+ Database operations and data persistence
+ Caching system for performance optimization
+Frontend Functionality:
+
+ Content generation form with niche selection
+ Trending products display with real-time updates
+ Generated content output with platform formatting
+ Affiliate link integration and display
+ Video script generation and preview
+ Mobile-responsive design
+Integration Testing:
+
+ End-to-end content generation workflow
+ Viral research → Template extraction → Content generation pipeline
+ Amazon affiliate monetization flow
+ Multi-platform content optimization
+ Error handling and fallback systems
+🚀 SUCCESS CRITERIA:
+When complete, the platform should:
+
+Discover trending products in real-time across 7+ niches
+Research viral content patterns and extract successful templates
+Generate AI-powered scripts optimized for viral engagement
+Monetize content with automatic affiliate link integration
+Optimize content for multiple social media platforms
+Scale to handle multiple users and high-volume content generation
+💡 TECHNICAL NOTES:
+The system uses a hybrid AI approach (OpenAI + Anthropic Claude) for content generation
+Perplexity API provides real-time trending data and viral content research
+Amazon PA-API enables affiliate monetization (requires valid credentials)
+PostgreSQL with Drizzle ORM handles all data persistence
+React frontend with TypeScript ensures type safety and maintainability
+Multi-platform content generation supports TikTok, Instagram, YouTube, and more
+🔧 IMMEDIATE ACTIONS NEEDED:
+Start the application and verify all services are running
+Test the trending products feed to ensure Perplexity integration works
+Generate sample content to verify the AI content generation pipeline
+Check affiliate link generation for Amazon integration
+Test the viral research functionality for content pattern extraction
+Verify database connections and data persistence
+Optimize the UI for focused viral content generation workflow
+This is a complete, production-ready viral content generation platform with sophisticated AI research, real-time trending data, and monetization capabilities. Focus on ensuring all components work together seamlessly to create the most powerful TikTok viral content generator available.
