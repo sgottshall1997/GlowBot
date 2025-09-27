@@ -34,21 +34,6 @@ import {
   CookaingContentRating, InsertCookaingContentRating,
   ContentLink, InsertContentLink,
   ContentExport, InsertContentExport,
-  // Customer Support Center types
-  SupportCategory, InsertSupportCategory,
-  SupportTicket, InsertSupportTicket,
-  SupportResponse, InsertSupportResponse,
-  KnowledgeBaseArticle, InsertKnowledgeBaseArticle,
-  LiveChatSession, InsertLiveChatSession,
-  LiveChatMessage, InsertLiveChatMessage,
-  SupportMetric, InsertSupportMetric,
-  // Amazon Monetization types
-  AmazonProduct, InsertAmazonProduct,
-  AffiliateLink, InsertAffiliateLink,
-  RevenueTracking, InsertRevenueTracking,
-  ProductPerformance, InsertProductPerformance,
-  // Product Opportunities types
-  ProductOpportunity, InsertProductOpportunity,
   users, contentGenerations, trendingProducts, scraperStatus, apiUsage,
   aiModelConfigs, teams, teamMembers, contentOptimizations, 
   contentPerformance, contentVersions, apiIntegrations, trendingEmojisHashtags,
@@ -59,13 +44,6 @@ import {
   analyticsEvents, abTests, abAssignments, abConversions, costs,
   // CookAIng Content History & Rating tables
   cookaingContentVersions, cookaingContentRatings, contentLinks, contentExports,
-  // Customer Support Center tables
-  supportCategories, supportTickets, supportResponses, knowledgeBaseArticles,
-  liveChatSessions, liveChatMessages, supportMetrics,
-  // Amazon Monetization tables
-  amazonProducts, affiliateLinks, revenueTracking, productPerformance,
-  // Product Opportunities tables
-  productOpportunities
 } from "@shared/schema";
 import { SCRAPER_PLATFORMS, ScraperPlatform, ScraperStatusType, NICHES } from "@shared/constants";
 import { db } from "./db";

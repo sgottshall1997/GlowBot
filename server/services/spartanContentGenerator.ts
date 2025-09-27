@@ -1,8 +1,17 @@
 import { OpenAI } from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Lazy initialization of OpenAI client to avoid requiring API key at startup
+let openai: OpenAI | null = null;
+
+function getOpenAIClient(): OpenAI {
+  if (!openai) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY environment variable is required for Spartan content generation');
+    }
+    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return openai;
+}
 
 // Spartan format configuration
 const SPARTAN_SYSTEM_PROMPT = `
@@ -129,7 +138,7 @@ Context: ${additionalContext}
       );
       
       // Process Claude response into Spartan format
-      const spartanProcessed = await openai.chat.completions.create({
+      const spartanProcessed = await getOpenAIClient().chat.completions.create({
         model: 'gpt-4',
         messages: [
           { role: 'system', content: `${SPARTAN_SYSTEM_PROMPT}\n\nConvert the following content into strict Spartan format:` },
@@ -142,7 +151,7 @@ Context: ${additionalContext}
       response = spartanProcessed;
     } else {
       // Use GPT directly
-      response = await openai.chat.completions.create({
+      response = await getOpenAIClient().chat.completions.create({
         model: 'gpt-4',
         messages: [
           { role: 'system', content: SPARTAN_SYSTEM_PROMPT },

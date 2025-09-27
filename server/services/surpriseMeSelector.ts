@@ -2,9 +2,18 @@ import OpenAI from 'openai';
 import { TemplateType, TEMPLATE_TYPES } from '@shared/constants';
 import { TEMPLATE_METADATA } from '@shared/templateMetadata';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Lazy initialization of OpenAI client to avoid requiring API key at startup
+let openai: OpenAI | null = null;
+
+function getOpenAIClient(): OpenAI {
+  if (!openai) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY environment variable is required for surprise me functionality');
+    }
+    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return openai;
+}
 
 export interface SurpriseMeSelection {
   selectedTemplate: TemplateType;
@@ -70,7 +79,7 @@ Select the template that would generate the highest-performing content. Respond 
   "confidence": 0.95
 }`;
 
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAIClient().chat.completions.create({
       model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
       messages: [
         {
@@ -158,7 +167,7 @@ Consider:
 
 Respond with just the template IDs in order of recommendation (comma-separated):`;
 
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAIClient().chat.completions.create({
       model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
       messages: [
         {

@@ -9,8 +9,18 @@ import { OpenAI } from 'openai';
 import { Niche } from '@shared/constants';
 import { storage } from '../storage';
 
-// Initialize OpenAI client
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// Lazy initialization of OpenAI client to avoid requiring API key at startup
+let openai: OpenAI | null = null;
+
+function getOpenAIClient(): OpenAI {
+  if (!openai) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY environment variable is required for social media optimization');
+    }
+    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return openai;
+}
 
 // Define router
 export const socialMediaOptimizationRouter = Router();
@@ -140,7 +150,7 @@ async function generateOptimizedContent(
 
     // Request optimization from OpenAI
     // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAIClient().chat.completions.create({
       model: "gpt-4o",
       messages: [
         { role: "system", content: "You are a social media optimization expert who helps create platform-specific content versions. Always keep hashtags without spaces." },

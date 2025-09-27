@@ -6,15 +6,29 @@
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Lazy initialization of AI clients to avoid requiring API keys at startup
+let openai: OpenAI | null = null;
+let anthropic: Anthropic | null = null;
 
-// Initialize Anthropic client
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+function getOpenAIClient(): OpenAI {
+  if (!openai) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY environment variable is required for OpenAI functionality');
+    }
+    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return openai;
+}
+
+function getAnthropicClient(): Anthropic {
+  if (!anthropic) {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      throw new Error('ANTHROPIC_API_KEY environment variable is required for Anthropic functionality');
+    }
+    anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  }
+  return anthropic;
+}
 
 interface ContentGenerationParams {
   systemPrompt: string;
@@ -73,7 +87,7 @@ export const aiModelClient = {
       // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
       const actualModel = model === 'gpt-4' ? 'gpt-4o' : model;
 
-      const response = await openai.chat.completions.create({
+      const response = await getOpenAIClient().chat.completions.create({
         model: actualModel,
         messages: [
           {
@@ -112,7 +126,7 @@ export const aiModelClient = {
       } = params;
 
       // the newest Anthropic model is "claude-3-7-sonnet-20250219" which was released February 24, 2025
-      const response = await anthropic.messages.create({
+      const response = await getAnthropicClient().messages.create({
         model: model,
         max_tokens: maxTokens,
         temperature: temperature,
@@ -160,7 +174,7 @@ export const aiModelClient = {
       - targetAudience: Who this content is most likely targeted towards`;
 
       // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
-      const response = await openai.chat.completions.create({
+      const response = await getOpenAIClient().chat.completions.create({
         model: 'gpt-4o',
         messages: [
           {

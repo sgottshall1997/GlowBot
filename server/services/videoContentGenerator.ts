@@ -1,8 +1,17 @@
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Lazy initialization of OpenAI client to avoid requiring API key at startup
+let openai: OpenAI | null = null;
+
+function getOpenAIClient(): OpenAI {
+  if (!openai) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY environment variable is required for video content generation');
+    }
+    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return openai;
+}
 
 interface VideoContentRequest {
   productName: string;
@@ -62,7 +71,7 @@ SCRIPT FORMAT:
 
 Write ONLY the script content, no additional formatting or labels:`;
 
-    const scriptResponse = await openai.chat.completions.create({
+    const scriptResponse = await getOpenAIClient().chat.completions.create({
       model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
       messages: [
         {
@@ -97,7 +106,7 @@ ${getNicheHashtags(niche)}
 
 Write the caption followed by hashtags:`;
 
-    const captionResponse = await openai.chat.completions.create({
+    const captionResponse = await getOpenAIClient().chat.completions.create({
       model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
       messages: [
         {

@@ -2,13 +2,29 @@ import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import { InsertContentEvaluation } from '@shared/schema';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Lazy initialization of AI clients to avoid requiring API keys at startup
+let openai: OpenAI | null = null;
+let anthropic: Anthropic | null = null;
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+function getOpenAIClient(): OpenAI {
+  if (!openai) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY environment variable is required for AI evaluation');
+    }
+    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return openai;
+}
+
+function getAnthropicClient(): Anthropic {
+  if (!anthropic) {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      throw new Error('ANTHROPIC_API_KEY environment variable is required for AI evaluation');
+    }
+    anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  }
+  return anthropic;
+}
 
 interface EvaluationResult {
   viralityScore: number;
@@ -64,7 +80,7 @@ Provide your evaluation in the following JSON format:
 
 export async function evaluateContentWithChatGPT(content: string): Promise<EvaluationResult> {
   try {
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAIClient().chat.completions.create({
       model: "gpt-4o", // Latest OpenAI model
       messages: [
         {
@@ -102,7 +118,7 @@ export async function evaluateContentWithChatGPT(content: string): Promise<Evalu
 
 export async function evaluateContentWithClaude(content: string): Promise<EvaluationResult> {
   try {
-    const response = await anthropic.messages.create({
+    const response = await getAnthropicClient().messages.create({
       model: "claude-sonnet-4-20250514", // Latest Claude model
       max_tokens: 1000,
       temperature: 0.3,

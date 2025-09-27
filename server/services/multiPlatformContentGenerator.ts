@@ -4,8 +4,29 @@ import Anthropic from '@anthropic-ai/sdk';
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 // the newest Anthropic model is "claude-3-7-sonnet-20250219" which was released February 24, 2025
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+// Lazy initialization of AI clients to avoid requiring API keys at startup
+let openai: OpenAI | null = null;
+let anthropic: Anthropic | null = null;
+
+function getOpenAIClient(): OpenAI {
+  if (!openai) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY environment variable is required for multi-platform content generation');
+    }
+    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return openai;
+}
+
+function getAnthropicClient(): Anthropic {
+  if (!anthropic) {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      throw new Error('ANTHROPIC_API_KEY environment variable is required for multi-platform content generation');
+    }
+    anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  }
+  return anthropic;
+}
 
 interface PlatformContentRequest {
   platform: string;
@@ -232,7 +253,7 @@ export class MultiPlatformContentGenerator {
     
     try {
       // Try OpenAI first
-      const response = await openai.chat.completions.create({
+      const response = await getOpenAIClient().chat.completions.create({
         model: "gpt-4o",
         messages: [{ role: "user", content: prompt }],
         max_tokens: 1000,
@@ -247,7 +268,7 @@ export class MultiPlatformContentGenerator {
       
       try {
         // Fallback to Anthropic
-        const response = await anthropic.messages.create({
+        const response = await getAnthropicClient().messages.create({
           model: "claude-3-7-sonnet-20250219",
           max_tokens: 1000,
           messages: [{ role: "user", content: prompt }],
