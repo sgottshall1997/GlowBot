@@ -73,6 +73,7 @@ import { perplexityAutomationRouter } from "./api/perplexity-automation";
 import safeguardMonitorRouter from "./api/safeguard-monitor";
 import amazonRouter from "./api/amazon";
 import amazonTrendsRouter from "./api/amazon-trends";
+import { unifiedGenerateRouter } from "./api/unified-generate";
 import hybridTrendsRouter from "./api/hybridTrends";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -114,6 +115,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // New unified content generation endpoint (moved earlier to prevent conflicts)
   app.use('/api/generate-unified', generateContentUnifiedRouter);
+  
+  // Unified monorepo API endpoints (working version)
+  const unifiedRouter = await import('./api/unified');
+  app.use('/api', unifiedRouter.default);
 
   // Compliance API routes
   app.post('/api/compliance/enhance', enhanceCompliance);

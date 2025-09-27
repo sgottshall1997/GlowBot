@@ -71,6 +71,13 @@ const sidebarData: SidebarCategory[] = [
     ]
   },
   {
+    name: "Modules",
+    items: [
+      { name: "GlowBot", href: "/glowbot", icon: Sparkles },
+      { name: "ScriptTok", href: "/scriptok", icon: Bot },
+    ]
+  },
+  {
     name: "Core",
     items: [
       { name: "Dashboard", href: "/", icon: Home },

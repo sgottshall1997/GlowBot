@@ -47,6 +47,10 @@ import ScheduleManager from "@/pages/schedule-manager";
 import SupportPage from "@/pages/SupportPage";
 import ProductResearch from "@/pages/ProductResearch";
 
+// Module pages
+import GlowBotModule from "@/pages/modules/GlowBotModule";
+import ScriptTokModule from "@/pages/modules/ScriptTokModule";
+
 // CookAIng Marketing Engine pages - Note: These pages are referenced in redirects below but not implemented yet
 import PublicForm from "@/pages/public-form";
 
@@ -82,6 +86,11 @@ function MainAppRouter() {
       {/* Dashboard as the landing page */}
       <Route path="/" component={Dashboard} />
       <Route path="/home" component={Home} />
+      
+      {/* Module Routes */}
+      <Route path="/glowbot" component={GlowBotModule} />
+      <Route path="/scriptok" component={ScriptTokModule} />
+      
       <Route path="/generate" component={GenerateContent} />
       <Route path="/unified-generator" component={UnifiedContentGeneration} />
       <Route path="/cookaing-generator" component={CookaingUnifiedContentGenerator} />

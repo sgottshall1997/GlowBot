@@ -1,4 +1,5 @@
-import { ModuleKey } from '@glowbot/shared';
+// Define ModuleKey locally since workspace imports not available
+export type ModuleKey = 'glowbot' | 'scriptok';
 
 export interface PromptRequest {
   module: ModuleKey;
