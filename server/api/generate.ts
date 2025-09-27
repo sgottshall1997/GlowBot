@@ -91,4 +91,68 @@ router.get('/content', async (req: Request, res: Response) => {
   }
 });
 
+// List available modules and playbooks
+router.get('/modules', (req: Request, res: Response) => {
+  try {
+    const modules = {
+      glowbot: {
+        name: "GlowBot",
+        description: "AI-powered viral content generation",
+        playbooks: [
+          {
+            id: "viral-hook",
+            name: "Viral Hook Generator", 
+            description: "Creates engaging hooks for social media content",
+            platforms: ["tiktok", "shorts", "reels"]
+          },
+          {
+            id: "content-script",
+            name: "Content Script Generator",
+            description: "Generates complete scripts for video content", 
+            platforms: ["youtube", "tiktok", "shorts"]
+          },
+          {
+            id: "trend-adaptation",
+            name: "Trend Adaptation",
+            description: "Adapts trending formats to your content",
+            platforms: ["tiktok", "shorts", "reels"]
+          }
+        ]
+      },
+      scriptok: {
+        name: "ScriptTok",
+        description: "Specialized script generation for short-form video content",
+        playbooks: [
+          {
+            id: "tiktok-script",
+            name: "TikTok Script Generator",
+            description: "Creates engaging TikTok scripts with hooks and viral elements",
+            platforms: ["tiktok"]
+          },
+          {
+            id: "shorts-script", 
+            name: "YouTube Shorts Generator",
+            description: "Optimized scripts for YouTube Shorts format",
+            platforms: ["shorts"]
+          },
+          {
+            id: "reels-script",
+            name: "Instagram Reels Creator", 
+            description: "Instagram Reels scripts with visual storytelling",
+            platforms: ["reels"]
+          }
+        ]
+      }
+    };
+
+    res.json(modules);
+  } catch (error) {
+    console.error('List modules error:', error);
+    res.status(500).json({
+      error: 'Failed to list modules',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 export default router;
