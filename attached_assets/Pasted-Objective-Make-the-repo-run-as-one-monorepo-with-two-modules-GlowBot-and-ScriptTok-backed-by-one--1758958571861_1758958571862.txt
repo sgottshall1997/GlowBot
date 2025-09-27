@@ -1,0 +1,141 @@
+Objective: Make the repo run as one monorepo with two modules (GlowBot and ScriptTok) backed by one server and one prompt engine. No auth/billing. Deliver clean folder structure, unified env, single /api/generate, shared content store, shared UI, and basic tests. Work on a new branch only.
+
+Branch & safety
+	1.	Create branch merge/base-connection-setup.
+	2.	Do not modify main. Commit after each major step.
+
+Folder layout (target)
+
+/apps
+  /glowbot/          # existing app
+  /scriptok/         # existing ScriptTok UI
+/packages
+  /shared/           # env loader, types, client SDK, utilities
+  /prompt-factory/   # single prompt engine (GlowBot core + ScriptTok templates)
+  /ui/               # shared UI primitives
+/server              # single Node/TS server exposing /api/*
+
+Workspaces + scripts
+3) Enable workspaces at root package.json:
+
+{ "private": true, "workspaces": ["apps/*", "packages/*", "server"] }
+
+	4.	Add root scripts:
+
+{
+  "scripts": {
+    "dev": "concurrently -n SERVER,STOK,GLOW \"npm:dev:server\" \"npm:dev:scriptok\" \"npm:dev:glowbot\"",
+    "dev:server": "npm -w server run dev",
+    "dev:scriptok": "npm -w apps/scriptok run dev",
+    "dev:glowbot": "npm -w apps/glowbot run dev",
+    "build": "npm -w server run build && npm -w apps/scriptok run build && npm -w apps/glowbot run build && npm -w packages/prompt-factory run build && npm -w packages/shared run build && npm -w packages/ui run build",
+    "test": "npm -w packages/prompt-factory run test && npm -w server run test",
+    "typecheck": "tsc -b",
+    "lint": "eslint ."
+  }
+}
+
+(Use pnpm or npm consistently; adjust commands accordingly.)
+
+Env unification
+5) At repo root, create .env.example with:
+
+OPENAI_API_KEY=sk-xxx
+LOG_LEVEL=info
+DATABASE_URL=postgres://user:pass@localhost:5432/app   # optional for later
+
+	6.	Create packages/shared/src/env.ts:
+
+	•	Use zod/envalid to validate the above.
+	•	Export a typed env object.
+
+	7.	Refactor server and both apps to import from @shared/env.
+
+Prompt engine consolidation
+8) Create packages/prompt-factory/src/index.ts that exports:
+
+export type ModuleKey = "scriptok" | "glowbot";
+export async function generate(opts: {
+  module: ModuleKey;
+  platform: "tiktok" | "shorts" | "reels" | "blog" | "youtube" | "email";
+  playbook: string;
+  inputs: Record<string, unknown>;
+}): Promise<{ text: string; meta?: Record<string, unknown> }>;
+
+	9.	Use GlowBot’s current engine as the main implementation.
+	10.	Move ScriptTok prompts/templates into packages/prompt-factory/src/modules/scriptok/… and wire routing based on opts.module.
+	11.	Add Vitest tests verifying:
+
+	•	module:"scriptok" returns the same shape as before.
+	•	module:"glowbot" paths still work.
+
+Single API surface
+12) In /server:
+	•	Expose GET /api/health → { ok: true }
+	•	Expose GET /api/version → { version }
+	•	Expose POST /api/generate → body validation → call prompt-factory.generate → return { id, module, platform, playbook, text, meta, createdAt }
+
+	13.	If ScriptTok previously generated client-side, switch it to call /api/generate.
+
+Shared content/history (dev-only)
+14) In packages/shared/src/content.ts, define:
+
+export interface ContentItem {
+  id: string;
+  module: "scriptok" | "glowbot";
+  platform: "tiktok" | "shorts" | "reels" | "blog" | "youtube" | "email";
+  playbook: string;
+  text: string;
+  meta?: Record<string, unknown>;
+  createdAt: string;
+}
+
+	15.	Implement a simple dev repository packages/shared/src/contentRepo.memory.ts that persists to a JSON file under /tmp/content-dev.json. Provide save(item), list({module?}).
+	16.	On successful /api/generate, save to this repo and return the saved ContentItem.
+
+Client wiring
+17) Create packages/shared/src/client.ts with generate() and listContent() helpers calling /api/*.
+18) Update both apps to use the shared client for generation and listing.
+19) Add a Content History page in each app that lists items filtered by its module.
+
+UI standardization
+20) Move duplicate UI primitives into packages/ui (Button, Card, Section, EmptyState).
+21) Replace local copies in both apps with @ui/* imports.
+
+Dev routing/proxy
+22) For Vite dev servers, either:
+	•	Add a proxy so /api/* requests go to the server port, or
+	•	Enable CORS on the server for http://localhost:* during dev.
+
+Testing
+23) Add minimal Vitest tests for prompt-factory routing and API input validation.
+24) Add a minimal Playwright e2e that:
+	•	Opens /scriptok, generates, sees output on page, and sees item in history.
+	•	Opens /glowbot, does the same.
+
+Docs
+25) Overwrite root README.md with:
+	•	Quick start (install, cp .env.example .env, npm run dev)
+	•	Folder map and responsibilities
+	•	/api/generate request/response JSON
+	•	How to add a new playbook or module
+
+	26.	Add DECISIONS.md capturing:
+
+	•	Single server
+	•	GlowBot engine is core
+	•	Modules via module param
+	•	Dev-only content repo (will be replaced later)
+
+Acceptance criteria
+	•	npm i then npm run dev launches server + both apps.
+	•	POST /api/generate works for both modules and returns a ContentItem.
+	•	Both UIs can generate and display history filtered by module.
+	•	Only one .env.example at root; apps import env from @shared/env.
+	•	Shared UI imports in both apps; no duplicate Button/Card components.
+	•	Unit tests pass locally.
+
+Deliverables
+	•	Branch merge/base-connection-setup pushed.
+	•	Updated README.md and DECISIONS.md.
+	•	Short CHANGELOG entry describing the merge baseline.
