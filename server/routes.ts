@@ -112,7 +112,7 @@ import glowbotAdminRouter from "./api/admin";
 export async function registerRoutes(app: Express): Promise<Server> {
   // GlowBot Admin routes (for comprehensive testing)
   app.use('/api/glowbot/admin', glowbotAdminRouter);
-  
+
   // CookAIng Marketing Engine routes
   app.use('/api/cookaing-marketing/organizations', organizationsRouter);
   app.use('/api/cookaing-marketing/contacts', contactsRouter);
@@ -120,7 +120,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/cookaing-marketing/workflows', workflowsRouter);
   app.use('/api/cookaing-marketing/forms', formsRouter);
   app.use('/api/cookaing-marketing/affiliate-products', affiliateProductsRouter);
-  
+
   // Public forms access (limited to public endpoints only)
   app.use('/api/forms', publicFormsRouter);
   app.use('/api/cookaing-marketing/email', emailRouter);
@@ -140,68 +140,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/cookaing-marketing/compliance', complianceRouter);
   app.use('/api/cookaing-marketing/enhance', enhanceRouter);
   app.use('/api/cookaing-marketing/support', supportRouter);
-  
+
   // Phase 5: Advanced Personalization and Collaboration
   app.use('/api/cookaing-marketing', phase5Router);
   app.use('/api/cookaing-marketing/trends', trendsRouter);
   app.use('/api/cookaing-marketing/affiliate-auto-insert', affiliateAutoInsertRouter);
   app.use('/api/cookaing-promo', cookAIngPromoRouter);
   app.use('/api/cookaing-marketing/seed-data', seedDataRouter);
-  
+
   // CookAIng Marketing Engine authentication
   app.post('/api/cookaing-marketing/auth/login', (req, res) => {
     const { password } = req.body;
     const expectedPassword = process.env.COOKAING_SECTION_PASSWORD;
-    
+
     if (!expectedPassword) {
       return res.json({ success: true }); // No password protection configured
     }
-    
+
     if (password === expectedPassword) {
       return res.json({ success: true });
     }
-    
+
     return res.status(401).json({ success: false, error: 'Invalid password' });
   });
-  
+
   // Redirect system for affiliate tracking
   app.use('/api/redirect', redirectRouter);
   app.use('/go', redirectRouter);
-  
+
   // Platform-specific content generation
   app.use('/api/platform-content', platformContentRouter);
-  
+
   // Hook engine
   app.use('/api/hooks', hooksRouter);
-  
+
   // Scheduling system
   app.use('/api/scheduling', schedulingRouter);
-  
+
   // Performance metrics
   app.use('/api/metrics', metricsRouter);
-  
+
   // Affiliate networks
   app.use('/api/affiliate-networks', affiliateNetworksRouter);
-  
+
   // Affiliate link injection and management
   app.use('/api/affiliate', affiliateRouter);
-  
+
   // Perplexity trends
   app.use('/api/perplexity-trends', perplexityTrendsRouter);
   app.post('/api/perplexity-trends/refresh-individual', refreshIndividualProduct);
-  
+
   // Product research
   app.use('/api/product-research', productResearchRouter);
-  
+
   // Cron job status monitoring
   app.use('/api/cron-status', cronStatusRouter);
-  
+
   // Perplexity status monitoring
   app.use('/api/perplexity-status', perplexityStatusRouter);
-  
+
   // New unified content generation endpoint (moved earlier to prevent conflicts)
   app.use('/api/generate-unified', generateContentUnifiedRouter);
-  
+
   // Compliance API routes
   app.post('/api/compliance/enhance', enhanceCompliance);
   app.post('/api/compliance/validate', validateCompliance);
@@ -214,23 +214,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/analytics', analyticsRouter);
 
   app.use('/api/templates', templateRouter);
-  
+
   // Enhanced template management API
   app.get('/api/templates', async (req, res) => {
     const { getTemplates } = await import('./api/templates');
     await getTemplates(req, res);
   });
-  
+
   app.get('/api/templates/popular', async (req, res) => {
     const { getPopularTemplates } = await import('./api/templates');
     await getPopularTemplates(req, res);
   });
-  
+
   app.get('/api/templates/recommendations', async (req, res) => {
     const { getTemplateRecommendations } = await import('./api/templates');
     await getTemplateRecommendations(req, res);
   });
-  
+
   app.get('/api/templates/:id', async (req, res) => {
     const { getTemplateById } = await import('./api/templates');
     await getTemplateById(req, res);
@@ -246,16 +246,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/integrations', apiIntegrationRouter);
   app.use('/api/options', optionsRouter);
   app.use('/api/history', historyRouter);
-  
+
   // Content history alias endpoint
   app.get('/api/content-history', async (req, res) => {
     const { getAllContentHistory } = await import('./storage');
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
-      
+
       const history = await storage.getAllContentHistory(limit, offset);
-      
+
       res.json({
         success: true,
         history,
@@ -290,7 +290,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/post/test-make-webhook', async (req, res) => {
     try {
       const makeWebhookUrl = process.env.MAKE_WEBHOOK_URL;
-      
+
       if (!makeWebhookUrl) {
         return res.status(400).json({
           error: 'Webhook not configured',
@@ -331,24 +331,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-  
+
   // Rewrite content endpoint
   app.post('/api/post/rewrite-content', rewriteContent);
-  
+
   // Caption rewrite endpoint
   app.post('/api/post/rewrite-caption', rewriteCaption);
-  
+
   // Multi-platform content generation endpoints
   app.post('/api/multi-platform/generate', generateMultiPlatformContent);
   app.post('/api/multi-platform/schedule', scheduleMultiPlatformContent);
-  
+
   // Setup feedback logging routes
   setupFeedbackRoutes(app);
-  
+
   // AI Models API routes
   const { registerAIModelsRoutes } = await import('./api/ai-models');
   registerAIModelsRoutes(app);
-  
+
   // Import rating API functions
   const { 
     saveRating, 
@@ -377,7 +377,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/prompt-structure', async (req, res) => {
     try {
       const { templateType, niche, tone, productName } = req.body;
-      
+
       if (!templateType || !niche || !tone) {
         return res.status(400).json({
           error: 'Missing required fields',
@@ -387,7 +387,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Import prompt factory to get the actual prompt structure
       const { generatePrompt } = await import('./services/promptFactory');
-      
+
       const promptConfig = {
         niche,
         templateType,
@@ -397,7 +397,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const promptStructure = generatePrompt(promptConfig);
-      
+
       res.json({
         success: true,
         systemPrompt: promptStructure.systemPrompt,
@@ -415,7 +415,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-  
+
   // Get scraper health endpoint
   app.get('/api/scraper-health', async (req, res) => {
     try {
@@ -426,7 +426,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to fetch scraper health" });
     }
   });
-  
+
   // Get API usage endpoint
   app.get('/api/usage', async (req, res) => {
     try {
@@ -434,7 +434,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const today = await storage.getTodayApiUsage();
       const weeklyUsage = await storage.getWeeklyApiUsage();
       const monthlyUsage = await storage.getMonthlyApiUsage();
-      
+
       res.json({
         today,
         weekly: weeklyUsage,
@@ -461,7 +461,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/cooking/generate-recipe', async (req, res) => {
     try {
       const { ingredient, method } = req.body;
-      
+
       if (!ingredient || !method) {
         return res.status(400).json({ error: "Ingredient and method are required" });
       }
@@ -472,7 +472,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         seasonality: 'year-round', 
         nutritionFacts: 'Nutritious and delicious' 
       };
-      
+
       const recipes = await cookingPipeline.generateRecipeContent(ingredientData, method);
       res.json({ recipes });
     } catch (error) {
@@ -494,14 +494,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/cooking/generate-daily-batch', async (req, res) => {
     try {
       const batchRecipes = await cookingPipeline.generateDailyBatch();
-      
+
       // Group recipes by skill level for better organization
       const groupedBySkill = {
         'Elite Chef': batchRecipes.filter(recipe => recipe.script.includes('elite chefs')),
         'Skilled Home Chef': batchRecipes.filter(recipe => recipe.script.includes('skilled home chefs')),
         'Beginner': batchRecipes.filter(recipe => recipe.script.includes('beginners'))
       };
-      
+
       res.json({ batchRecipes: groupedBySkill });
     } catch (error) {
       console.error("Error generating daily batch:", error);
@@ -524,7 +524,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('🔄 Manual Amazon trends fetch triggered');
       // Import Amazon trends service
-      
+
       // Call the refresh-all endpoint
       const mockRequest = { method: 'POST', url: '/refresh-all' };
       const mockResponse = {
@@ -533,14 +533,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           json: (data: any) => ({ ...data, statusCode: code })
         })
       };
-      
+
       // Simulated API call to refresh all Amazon trends
       const result = await fetch('http://localhost:5000/api/amazon-trends/refresh-all', {
         method: 'POST'
       });
-      
+
       const data = await result.json();
-      
+
       res.json({
         success: true,
         message: `Amazon fetch completed. Added ${data.totalProducts || 0} products`,
@@ -564,16 +564,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('🔄 Manual Perplexity trends fetch triggered - using new niche-specific modules');
       const { runAllPerplexityFetchers } = await import('./services/perplexity/runAllFetchers');
       const result = await runAllPerplexityFetchers();
-      
+
       let totalProductsAdded = 0;
-      
+
       // Store products from each niche in database
       for (const nicheResult of result.results) {
         if (nicheResult.success && nicheResult.products.length > 0) {
           try {
             const { trendingProducts } = await import('@shared/schema');
             const { db } = await import('./db');
-            
+
             for (const product of nicheResult.products) {
               await db.insert(trendingProducts).values({
                 title: product.product,
@@ -591,7 +591,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
       }
-      
+
       res.json({
         success: true,
         message: `Niche-specific fetch completed. Added ${totalProductsAdded} products from ${result.summary.successful}/${result.summary.totalFetchers} fetchers`,
@@ -608,7 +608,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-  
+
   // Analytics endpoints are now handled by analyticsRouter
 
   // Daily content showcase endpoint
@@ -616,12 +616,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { getDailyShowcase } = await import('./services/dailyShowcase.js');
       const showcaseData = await getDailyShowcase();
-      
+
       res.json({ 
         success: true, 
         data: showcaseData 
       });
-      
+
     } catch (error) {
       console.error('Daily showcase error:', error);
       res.status(500).json({ 
@@ -633,7 +633,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Daily batch content generation endpoint
   app.post('/api/generate/daily-batch', generateDailyBatch);
-  
+
   // Test enhanced payloads endpoint
 
 
@@ -663,7 +663,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { niche } = req.params;
       const validNiches = ['fitness', 'beauty', 'travel', 'tech', 'fashion', 'food', 'pets'];
-      
+
       if (!validNiches.includes(niche)) {
         return res.status(400).json({
           success: false,
@@ -672,7 +672,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const startTime = Date.now();
-      
+
       // Dynamic import based on niche
       const fetcherMap = {
         fitness: () => import('./services/perplexity/perplexityFetchFitness').then(m => m.fetchTrendingFitnessProducts),
@@ -713,7 +713,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { getTrendingAmazonProducts } = await import('./scrapers/amazonBeauty.js');
       const products = await getTrendingAmazonProducts();
-      
+
       res.json({ 
         success: true, 
         data: products,
@@ -721,7 +721,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         niches: 7,
         productsPerNiche: 4
       });
-      
+
     } catch (error) {
       console.error('Amazon beauty scraping error:', error);
       res.status(500).json({ 
@@ -737,14 +737,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { getTrendingAmazonProductsByNiche } = await import('./scrapers/amazonBeauty.js');
       const { niche } = req.params;
       const products = await getTrendingAmazonProductsByNiche(niche);
-      
+
       res.json({ 
         success: true, 
         data: products,
         niche: niche,
         count: products.length
       });
-      
+
     } catch (error) {
       console.error(`Amazon beauty scraping error for ${req.params.niche}:`, error);
       res.status(500).json({ 
@@ -755,12 +755,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // NEW FEATURES: Cross-platform scheduling, bulk generation, and performance analytics
-  
+
   // Cross-Platform Scheduling
   app.post('/api/scheduling/schedule-content', scheduleContent);
   app.get('/api/scheduling/posts', getScheduledPosts);
   app.post('/api/scheduling/process', processScheduledPosts);
-  
+
   // Legacy Bulk Content Generation (deprecated - use /api/generate-unified instead)
   app.post('/api/bulk/start-generation', (req, res) => {
     console.log('⚠️ Deprecated endpoint /api/bulk/start-generation called - use /api/generate-unified instead');
@@ -769,26 +769,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/bulk/job/:jobId', getBulkJobStatus);
   app.get('/api/bulk/jobs', getBulkJobs);
   app.get('/api/bulk/content/:jobId', getBulkContentByJobId);
-  
+
   // Legacy Automated bulk generation (deprecated - use /api/generate-unified instead)
   app.post('/api/automated-bulk/start', (req, res) => {
     console.log('⚠️ Deprecated endpoint /api/automated-bulk/start called - use /api/generate-unified instead');
     startAutomatedBulkGeneration(req, res);
   });
   app.get('/api/automated-bulk/details/:jobId', getBulkJobDetails);
-  
+
   // OLD SCHEDULED BULK GENERATION ROUTES REMOVED
   // Now using simplified scheduling: /api/automated-bulk/schedule
-  
+
   // NEW: Database-persistent scheduling system
   app.post('/api/automated-bulk/schedule', createScheduledBulkJob);
   app.get('/api/automated-bulk/scheduled-jobs', getScheduledBulkJobs);
   app.delete('/api/automated-bulk/scheduled-jobs/:jobId', deleteScheduledBulkJob);
-  
+
   // Spartan content generation endpoints
   app.post('/api/spartan/generate', generateSpartanFormatContent);
   app.get('/api/spartan/availability', checkSpartanAvailability);
-  
+
   // Performance Analytics & ROI Tracking
 
 
@@ -796,31 +796,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/create-redirect', createRedirect);
   app.get('/r/:id', handleRedirect);
   app.get('/api/redirect-stats', getRedirectStats);
-  
+
   // Favorites API
   app.use('/api/favorites', favoritesRouter);
 
 
 
-  
+
   // 🛑 SAFEGUARD MONITORING ENDPOINTS
   app.use('/api/safeguards', safeguardMonitorRouter);
-  
+
   // 🚫 GLOBAL GATEKEEPER MONITORING ENDPOINTS
 
-  
+
   // 🧪 SAFEGUARD TESTING ENDPOINTS
 
-  
+
   // 🚨 EMERGENCY SHUTDOWN ENDPOINTS
 
-  
+
   // 🔄 PERPLEXITY AUTOMATION CONTROL
   app.use('/api/perplexity-automation', perplexityAutomationRouter);
 
   // Register content evaluation routes
   registerContentEvaluationRoutes(app);
-  
+
   // Claude AI Suggestions system for niche-specific content optimization
   app.use('/api/claude-suggestions', claudeAiSuggestionsRouter);
 
@@ -839,7 +839,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('🧪 Starting scheduled generation test via API...');
       const testPassed = await testScheduledGeneration();
-      
+
       res.json({
         success: true,
         testPassed,
@@ -856,7 +856,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-  
+
   // 🧪 COMPREHENSIVE SAFEGUARD TEST ENDPOINT - DEVELOPMENT ONLY
   app.get('/api/test/comprehensive-safeguards', async (req, res) => {
     // 🚫 PRODUCTION BLOCK: No tests in production
@@ -871,7 +871,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       console.log('🧪 Starting comprehensive safeguard test suite...');
-      
+
       // Stub implementation for comprehensive safeguard tests
       const testResults = {
         testsRun: 0,
@@ -880,7 +880,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         summary: "Comprehensive safeguard tests not implemented yet",
         details: []
       };
-      
+
       res.json({
         success: true,
         testResults,
@@ -895,9 +895,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-  
+
   // Test endpoint removed to fix deployment - was causing missing import error
-  
+
   // 🏥 HEALTH CHECK ENDPOINT FOR DEPLOYMENT DIAGNOSTICS
   app.get('/api/health', async (req, res) => {
     try {
@@ -919,7 +919,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           webhook: !!process.env.MAKE_WEBHOOK_URL
         }
       };
-      
+
       // Test database connection
       try {
         await db.execute('SELECT 1');
@@ -929,19 +929,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         healthStatus.database.error = dbError.message;
         healthStatus.status = 'degraded';
       }
-      
+
       // Check if any critical dependencies are missing
       const criticalDeps = ['openai', 'anthropic', 'database'];
       const missingDeps = criticalDeps.filter(dep => !healthStatus.dependencies[dep]);
-      
+
       if (missingDeps.length > 0) {
         healthStatus.status = 'degraded';
         healthStatus.missingDependencies = missingDeps;
       }
-      
+
       const statusCode = healthStatus.status === 'healthy' ? 200 : 503;
       res.status(statusCode).json(healthStatus);
-      
+
     } catch (error) {
       res.status(500).json({
         status: 'unhealthy',
@@ -952,11 +952,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
-  
+
   // Initialize scheduled jobs from database
   initializeScheduledJobs().catch(error => {
     console.error('❌ Failed to initialize scheduled jobs:', error);
   });
-  
+
   return httpServer;
 }
