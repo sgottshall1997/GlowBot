@@ -89,7 +89,7 @@ function MainAppRouter() {
       
       {/* Module Routes */}
       <Route path="/glowbot" component={GlowBotModule} />
-      <Route path="/scriptok" component={ScriptTokModule} />
+      <Route path="/scriptok*" component={ScriptTokModule} />
       
       <Route path="/generate" component={GenerateContent} />
       <Route path="/unified-generator" component={UnifiedContentGeneration} />
